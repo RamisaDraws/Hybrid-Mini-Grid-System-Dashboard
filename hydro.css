@@ -1,0 +1,535 @@
+/* ════════════════════════════════════════════════
+   hydro.css
+   Karazhar Minigrid — In-Pipe Hydro Page
+   Extends dashboard.css design tokens
+   ════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════
+   LARGE — 3-column grid (>1100px)
+   Left: 600px | Center: 1fr | Alerts: 200px
+══════════════════════════════════════ */
+.hydro-main {
+  display: grid;
+  grid-template-columns: 600px 1fr 200px;
+  grid-template-areas: "left center alerts";
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  align-items: start;
+  flex: 1;
+}
+
+.hydro-left {
+  grid-area: left;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Center: 2-col grid with specific row layout */
+.hydro-center {
+  grid-area: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto auto;
+  gap: 1rem;
+}
+
+/* Flow chart spans full width of center */
+.flow-chart-card { grid-column: 1 / -1; }
+
+.hydro-alerts {
+  grid-area: alerts;
+  position: sticky;
+  top: calc(56px + 1rem);
+}
+
+/* ── Page-load animations ── */
+.hydro-image-card    { animation: fadeUp 0.4s ease both; }
+.hydro-chart-card    { animation: fadeUp 0.4s ease 0.1s both; }
+.flow-chart-card     { animation: fadeUp 0.4s ease 0.15s both; }
+.pressure-gauge-card { animation: fadeUp 0.4s ease 0.2s both; }
+.pump-state-card     { animation: fadeUp 0.4s ease 0.2s both; }
+.gauge-card          { animation: fadeUp 0.4s ease 0.25s both; }
+
+/* ══════════════════════
+   IMAGE CARD
+══════════════════════ */
+.hydro-image-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--hydro);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.hydro-image-inner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 2.2;
+  background: #040e10;
+  overflow: hidden;
+}
+
+.hydro-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #040e10 0%, #071418 60%, #040e10 100%);
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.pipe-icon {
+  color: var(--hydro);
+  opacity: 0.35;
+}
+
+.hydro-image-placeholder span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--hydro);
+  letter-spacing: 0.15em;
+  opacity: 0.5;
+}
+
+.hydro-image-placeholder .placeholder-sub {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+  opacity: 1;
+  max-width: 280px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.hydro-image-footer {
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+}
+
+.hydro-image-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.hydro-capacity-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--hydro);
+  background: var(--hydro-dim);
+  border: 1px solid rgba(62, 207, 207, 0.2);
+  padding: 0.18rem 0.55rem;
+  border-radius: 5px;
+}
+
+/* ══════════════════════
+   CHART CARD (left col — power vs load)
+══════════════════════ */
+.hydro-chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--hydro);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.hydro-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.hydro-chart-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.hydro-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.legend-line {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.legend-line span {
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  display: block;
+}
+
+.hydro-chart-wrap {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 180px;
+}
+
+/* ══════════════════════
+   FLOW RATE CHART CARD (center top, full width)
+══════════════════════ */
+.flow-chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--hydro);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.flow-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flow-chart-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.flow-chart-unit {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  background: var(--surface2);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.flow-chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 130px;
+}
+
+/* ══════════════════════
+   GAUGE CARDS (shared)
+══════════════════════ */
+.gauge-card,
+.pressure-gauge-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.gauge-card-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  align-self: flex-start;
+}
+
+.gauge-canvas {
+  display: block;
+  width: 100% !important;
+  max-width: 200px;
+  height: auto !important;
+}
+
+.gauge-value-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: -6px;
+}
+
+.hydro-gauge-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--hydro);
+}
+
+.gauge-unit {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+}
+
+.gauge-subtext {
+  font-size: 0.63rem;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+
+/* ══════════════════════
+   PUMP STATE CARD
+══════════════════════ */
+.pump-state-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pump-state-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.pump-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.pump-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pump-on {
+  background: rgba(62, 207, 207, 0.12);
+  color: var(--hydro);
+  border: 1px solid rgba(62, 207, 207, 0.25);
+  box-shadow: 0 0 18px rgba(62, 207, 207, 0.12);
+}
+
+/* Pulsing glow when running */
+@keyframes pumpGlow {
+  0%, 100% { box-shadow: 0 0 14px rgba(62, 207, 207, 0.15); }
+  50%       { box-shadow: 0 0 28px rgba(62, 207, 207, 0.35); }
+}
+
+.pump-on { animation: pumpGlow 2.5s ease-in-out infinite; }
+
+.pump-off {
+  background: rgba(100, 100, 100, 0.1);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.pump-status-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pump-state-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--hydro);
+  letter-spacing: 0.06em;
+}
+
+.pump-state-off {
+  color: var(--text-muted);
+}
+
+.pump-state-sub {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+}
+
+/* Pipeline metadata grid */
+.pump-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.pump-meta-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pump-meta-label {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+}
+
+.pump-meta-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--hydro);
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE — MEDIUM-LARGE (≤1100px)
+   2-column: [left + center stacked] | alerts sidebar
+══════════════════════════════════════ */
+@media (max-width: 1100px) {
+  .hydro-main {
+    grid-template-columns: 1fr 200px;
+    grid-template-areas:
+      "left   alerts"
+      "center alerts";
+  }
+
+  .hydro-alerts {
+    position: sticky;
+    top: calc(56px + 1rem);
+  }
+
+  .hydro-center {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hydro-chart-wrap { min-height: 160px; }
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE — MEDIUM (≤850px)
+   Single column: left → center → alerts
+   Alerts become horizontal wrapping chips.
+══════════════════════════════════════ */
+@media (max-width: 850px) {
+  .hydro-main {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "left"
+      "center"
+      "alerts";
+  }
+
+  .hydro-alerts {
+    position: static;
+  }
+
+  .hydro-alerts .alerts-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .hydro-alerts .alert-item {
+    flex: 1 1 200px;
+    max-width: 300px;
+  }
+
+  .hydro-center {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hydro-chart-wrap { min-height: 160px; }
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE — SMALL (≤700px)
+   Matches overview page mobile behaviour:
+   - Topbar collapses to title + hamburger
+     (hamburger/mobile-nav handled by dashboard.css)
+   - All columns → single column
+   - Gauges + pump meta stack naturally
+   - Alerts scroll vertically
+══════════════════════════════════════ */
+@media (max-width: 700px) {
+  .hydro-main {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "left"
+      "center"
+      "alerts";
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  /* Center cards: 2-col gauge row still fits on phone */
+  .hydro-center {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Flow chart stays full width (already grid-column: 1/-1) */
+  .flow-chart-wrap {
+    height: 110px;
+  }
+
+  /* Gauge values slightly smaller */
+  .hydro-gauge-val { font-size: 1.6rem; }
+
+  /* Pump meta: 2 columns instead of 3 */
+  .pump-meta {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Alerts: vertical scroll column */
+  .hydro-alerts {
+    position: static;
+  }
+
+  .hydro-alerts .alerts-list {
+    flex-direction: column;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+
+  .hydro-alerts .alert-item {
+    flex: none;
+    max-width: none;
+  }
+}

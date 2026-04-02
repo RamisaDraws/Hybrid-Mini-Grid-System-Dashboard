@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Karazhar Village — Interactive Map</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="village_map.css">
+
+<style>
+  /* When embedded in iframe, no scrollbars */
+  html, body {
+    overflow: hidden;
+    height: auto;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="site-header">
+    <h1>Karazhar <span>Village</span> Map</h1>
+    <span class="header-tag">ENG30002 · Mini-Grid System</span>
+</header>
+
+<!-- ── Main layout ── -->
+<div class="page-wrap">
+    <section class="map-section">
+        <p class="map-label">Interactive Community Map — click any area to explore</p>
+
+        <div class="map-container" id="mapContainer">
+
+            <!-- Layer 0: base border frame -->
+            <img class="map-base" src="10.png" alt="Village boundary" />
+
+            <!-- Hotspot layers -->
+            <img class="hotspot-layer" src="1.png"  alt="Residential Area A" data-id="1"  data-modal="modal1"  />
+            <img class="hotspot-layer" src="2.png"  alt="Residential Area B" data-id="2"  data-modal="modal2"  />
+            <img class="hotspot-layer" src="3.png"  alt="Residential Area C" data-id="3"  data-modal="modal3"  />
+            <img class="hotspot-layer" src="4.png"  alt="Mosque"             data-id="4"  data-modal="modal4"  />
+            <img class="hotspot-layer" src="5.png"  alt="Market Area"        data-id="5"  data-modal="modal5"  />
+            <img class="hotspot-layer" src="6.png"  alt="Govt. Building"     data-id="6"  data-modal="modal6"  />
+            <img class="hotspot-layer" src="7.png"  alt="School"             data-id="7"  data-modal="modal7"  />
+            <img class="hotspot-layer" src="8.png"  alt="Hospital"           data-id="8"  data-modal="modal8"  />
+            <img class="hotspot-layer" src="9.png"  alt="Hotel"              data-id="9"  data-modal="modal9"  />
+            <img class="hotspot-layer" src="11.png" alt="Solar PV System"    data-id="11" data-modal="modal11" />
+            <img class="hotspot-layer" src="12.png" alt="Hydro IHS Turbine"  data-id="12" data-modal="modal12" />
+            <img class="hotspot-layer" src="13.png" alt="Diesel Generator"   data-id="13" data-modal="modal13" />
+
+        </div>
+    </section>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     MODALS
+     ══════════════════════════════════════════════ -->
+
+<!-- Modal 1: Residential Area A -->
+<div class="modal fade" id="modal1" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Residential Area A
+                    <span class="type-badge badge-residential">Residential</span>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <p>The northern residential cluster of Pani Para village, home to approximately 10 households. This zone is a primary beneficiary of the biogas mini-grid system.</p>
+                <div class="info-grid">
+                    <div class="info-chip"><span class="chip-label">Households</span><span class="chip-val">~10</span></div>
+                    <div class="info-chip"><span class="chip-label">Energy Source</span><span class="chip-val">Biogas + Grid</span></div>
+                    <div class="info-chip"><span class="chip-label">Load Type</span><span class="chip-val">Lighting, Appliances</span></div>
+                    <div class="info-chip"><span class="chip-label">Est. Demand</span><span class="chip-val">~2.5 kW</span></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn-close-custom" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 2: Residential Area B -->
+<div class="modal fade" id="modal2" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Residential Area B
+                    <span class="type-badge badge-residential">Residential</span>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <p>A mid-village residential cluster with close proximity to the mosque and market.</p>
+                <div class="info-grid">
+                    <div class="info-chip"><span class="chip-label">Households</span><span class="chip-val">~8</span></div>
+                    <div class="info-chip"><span class="chip-label">Energy Source</span><span class="chip-val">Biogas + Grid</span></div>
+                    <div class="info-chip"><span class="chip-label">Load Type</span><span class="chip-val">Lighting, Appliances</span></div>
+                    <div class="info-chip"><span class="chip-label">Est. Demand</span><span class="chip-val">~2.0 kW</span></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn-close-custom" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 3: Residential Area C -->
+<div class="modal fade" id="modal3" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Residential Area C
+                    <span class="type-badge badge-residential">Residential</span>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <p>The larger western residential zone, spanning two sub-clusters connected by a narrow passage.</p>
+                <div class="info-grid">
+                    <div class="info-chip"><span class="chip-label">Households</span><span class="chip-val">~18</span></div>
+                    <div class="info-chip"><span class="chip-label">Energy Source</span><span class="chip-val">Biogas + Solar</span></div>
+                    <div class="info-chip"><span class="chip-label">Load Type</span><span class="chip-val">Lighting, Cooking</span></div>
+                    <div class="info-chip"><span class="chip-label">Est. Demand</span><span class="chip-val">~4.2 kW</span></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn-close-custom" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 4: Mosque -->
+<div class="modal fade" id="modal4" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Mosque
+                    <span class="type-badge badge-commercial">Community</span>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <p>The central mosque serves as a community gathering point. Electrification supports lighting for evening prayers and PA system.</p>
+                <div class="info-grid">
+                    <div class="info-chip"><span class="chip-label">Capacity</span><span class="chip-val">~200 persons</span></div>
+                    <div class="info-chip"><span class="chip-label">Energy Source</span><span class="chip-val">Mini-grid</span></div>
+                    <div class="info-chip"><span class="chip-label">Load Type</span><span class="chip-val">Lighting, PA System</span></div>
+                    <div class="info-chip"><span class="chip-label">Peak Hours</span><span class="chip-val">Dawn, Dusk</span></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn-close-custom" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 5: Market Area -->
+<div class="modal fade" id="modal5" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Market Area
+                    <span class="type-badge badge-commercial">Commercial</span>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <p>The village market hosts 3 small vendor stalls. Reliable electricity enables refrigeration and extended trading hours.</p>
+                <div class="info-grid">
+                    <div class="info-chip"><span class="chip-label">Stalls</span><span class="chip-val">3</span></div>
+                    <div class="info-chip"><span class="chip-label">Energy Source</span><span class="chip-val">Mini-grid</span></div>
+                    <div class="info-chip"><span class="chip-label">Load Type</span><span class="chip-val">Lighting, Refrigeration</span></div>
+                    <div class="info-chip"><span class="chip-label">Trading Hours</span><span class="chip-val">6am – 9pm</span></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn-close-custom" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 6: Govt. Building -->
+<div class="modal fade" id="modal6" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Government Building
+                    <span class="type-badge badge-facility">Facility</span>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <p>The local government office coordinates rural development. Electrification supports computers, lighting, and communications.</p>
+                <div class="info-grid">
+                    <div class="info-chip"><span class="chip-label">Function</span><span class="chip-val">Administration</span></div>
+                    <div class="info-chip"><span class="chip-label">Energy Source</span><span class="chip-val">Mini-grid + Backup</span></div>
+                    <div class="info-chip"><span class="chip-label">Load Type</span><span class="chip-val">Computing, Lighting</span></div>
+                    <div class="info-chip"><span class="chip-label">Priority</span><span class="chip-val">High</span></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn-close-custom" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 7: School -->
+<div class="modal fade" id="modal7" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    School
+                    <span class="type-badge badge-facility">Education</span>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <p>The primary school serves children from Pani Para and neighbouring villages. Reliable power allows evening study, a computer lab, and water purification.</p>
+                <div class="info-grid">
+                    <div class="info-chip"><span class="chip-label">Students</span><span class="chip-val">~120</span></div>
+                    <div class="info-chip"><span class="chip-label">Energy Source</span><span class="chip-val">Solar + Mini-grid</span></div>
+                    <div class="info-chip"><span class="chip-label">Load Type</span><span class="chip-val">Lighting, Computers</span></div>
+                    <div class="info-chip"><span class="chip-label">SDG Impact</span><span class="chip-val">SDG 4 – Quality Education</span></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn-close-custom" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 8: Hospital -->
+<div class="modal fade" id="modal8" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Hospital / Clinic
+                    <span class="type-badge badge-facility">Healthcare</span>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <p>The village health clinic provides primary care. Electricity is critical for vaccine refrigeration, night procedures, and diagnostic equipment.</p>
+                <div class="info-grid">
+                    <div class="info-chip"><span class="chip-label">Type</span><span class="chip-val">Primary Clinic</span></div>
+                    <div class="info-chip"><span class="chip-label">Energy Source</span><span class="chip-val">Mini-grid (Priority)</span></div>
+                    <div class="info-chip"><span class="chip-label">Critical Load</span><span class="chip-val">Vaccine Refrigeration</span></div>
+                    <div class="info-chip"><span class="chip-label">SDG Impact</span><span class="chip-val">SDG 3 – Good Health</span></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn-close-custom" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 9: Hotel -->
+<div class="modal fade" id="modal9" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Hotel / Guesthouse
+                    <span class="type-badge badge-commercial">Commercial</span>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <p>A small guesthouse supporting fans, lighting, and phone charging — enabling small-scale tourism income.</p>
+                <div class="info-grid">
+                    <div class="info-chip"><span class="chip-label">Rooms</span><span class="chip-val">~6</span></div>
+                    <div class="info-chip"><span class="chip-label">Energy Source</span><span class="chip-val">Mini-grid</span></div>
+                    <div class="info-chip"><span class="chip-label">Load Type</span><span class="chip-val">Lighting, Fans, Charging</span></div>
+                    <div class="info-chip"><span class="chip-label">Economic Impact</span><span class="chip-val">Tourism income</span></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn-close-custom" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 11: Solar PV -->
+<div class="modal fade" id="modal11" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Solar PV System
+                    <span class="type-badge badge-solar">Solar</span>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <p>Rooftop photovoltaic panels installed across residential buildings and the school. Provides reliable daytime electricity for lighting and low-power appliances.</p>
+                <div class="info-grid">
+                    <div class="info-chip"><span class="chip-label">Capacity</span><span class="chip-val">~50 kW</span></div>
+                    <div class="info-chip"><span class="chip-label">Output Voltage</span><span class="chip-val">220 V AC</span></div>
+                    <div class="info-chip"><span class="chip-label">Serves</span><span class="chip-val">Residential + School</span></div>
+                    <div class="info-chip"><span class="chip-label">SDG Impact</span><span class="chip-val">SDG 7 – Clean Energy</span></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn-close-custom" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 12: Hydro IHS -->
+<div class="modal fade" id="modal12" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    In-pipe Hydro Turbine
+                    <span class="type-badge badge-hydro">Hydropower</span>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <p>An in-pipe micro-hydropower turbine installed within the Astana water supply transmission pipeline. Recovers energy from existing hydraulic head without disrupting water flow.</p>
+                <div class="info-grid">
+                    <div class="info-chip"><span class="chip-label">Capacity</span><span class="chip-val">250–270 kW</span></div>
+                    <div class="info-chip"><span class="chip-label">Hydraulic Head</span><span class="chip-val">55–60 m</span></div>
+                    <div class="info-chip"><span class="chip-label">Flow Rate</span><span class="chip-val">0.58 m³/s</span></div>
+                    <div class="info-chip"><span class="chip-label">Pipeline Dia.</span><span class="chip-val">700 mm</span></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn-close-custom" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 13: Diesel Generator -->
+<div class="modal fade" id="modal13" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Diesel Backup Generator
+                    <span class="type-badge badge-generator">Generator</span>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <p>A diesel generator reserved as last-resort backup. Activates when both solar and hydropower output fall below demand thresholds. Serves only critical facilities.</p>
+                <div class="info-grid">
+                    <div class="info-chip"><span class="chip-label">Status</span><span class="chip-val">Standby</span></div>
+                    <div class="info-chip"><span class="chip-label">Fuel Type</span><span class="chip-val">Diesel</span></div>
+                    <div class="info-chip"><span class="chip-label">Critical Loads</span><span class="chip-val">Hospital, School</span></div>
+                    <div class="info-chip"><span class="chip-label">Also Serves</span><span class="chip-val">Govt. Offices</span></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn-close-custom" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="village_map.js"></script>
+<script>
+  /* ── Report page height to parent (index.html) ──────────────────
+     Called after load and again after any image finishes loading
+     (map images may load late and increase the page height).
+  ──────────────────────────────────────────────────────────────── */
+  function reportHeight() {
+    const h = document.documentElement.scrollHeight;
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'mapHeight', height: h }, '*');
+    }
+  }
+
+  /* Fire immediately and after all resources settle */
+  window.addEventListener('load', reportHeight);
+
+  /* Also fire after each image loads in case layout reflows */
+  document.querySelectorAll('img').forEach(img => {
+    if (!img.complete) img.addEventListener('load', reportHeight);
+  });
+
+  /* Small delay fallback for late-rendering */
+  setTimeout(reportHeight, 500);
+  setTimeout(reportHeight, 1500);
+</script>
+</body>
+</html>

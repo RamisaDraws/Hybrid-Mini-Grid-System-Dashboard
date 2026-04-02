@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solar PV — Minigrid System Monitor · Karazhar</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dashboard.css">
+<link rel="stylesheet" href="solar.css">
+</head>
+<body>
+
+<!-- ── TOP BAR ── -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="site-title">
+      <span class="title-main">Minigrid System Monitor</span>
+      <span class="title-sep">/</span>
+      <a href="village_map.html" class="title-location">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Karazhar
+      </a>
+    </div>
+  </div>
+
+  <nav class="topbar-nav">
+    <a href="index.html" class="nav-link">Overview</a>
+    <a href="solar.html" class="nav-link solar-link active">Solar</a>
+    <a href="hydro.html" class="nav-link hydro-link">Hydro</a>
+    <a href="generator.html" class="nav-link gen-link">Generator</a>
+    <a href="#" class="nav-link">Login</a>
+  </nav>
+
+  <div class="topbar-right">
+    <div class="live-info">
+      <div class="live-time" id="live-time">--:--:--</div>
+      <div class="live-date" id="live-date">-- --- ----</div>
+    </div>
+    <div class="live-weather">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <span>-4°C</span>
+      <span class="weather-loc">Karazhar, KZ</span>
+    </div>
+  </div>
+
+  <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<!-- ── MOBILE NAV DRAWER ── -->
+<nav class="mobile-nav" id="mobile-nav">
+  <a href="index.html" class="nav-link">Overview</a>
+  <a href="solar.html" class="nav-link solar-link active">Solar</a>
+  <a href="hydro.html" class="nav-link hydro-link">Hydro</a>
+  <a href="generator.html" class="nav-link gen-link">Generator</a>
+  <a href="#" class="nav-link">Login</a>
+</nav>
+
+<!-- ── MAIN ── -->
+<main class="solar-main">
+
+  <!-- ════ LEFT COLUMN ════ -->
+  <div class="solar-left">
+
+    <!-- Solar photo -->
+    <div class="solar-image-card">
+      <div class="solar-image-inner">
+        <img src="14.jpg" alt="Rooftop Solar PV Array — Karazhar"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div class="solar-image-placeholder">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <span>IMAGE PLACEHOLDER — 14.jpg</span>
+        </div>
+      </div>
+      <div class="solar-image-footer">
+        <span class="solar-image-label">Rooftop Solar PV Array — Karazhar</span>
+        <span class="solar-capacity-badge">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          ~50 kW rated
+        </span>
+      </div>
+    </div>
+
+    <!-- Dual-line chart -->
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <span class="chart-card-title">Power Output vs Load Demand</span>
+        <div class="chart-legend">
+          <div class="legend-line">
+            <span style="background:#f5c842;"></span>
+            Power Out
+          </div>
+          <div class="legend-line">
+            <span style="background:#ff6b6b; opacity:0.8;"></span>
+            Load
+          </div>
+        </div>
+      </div>
+      <div class="chart-wrap-lg">
+        <canvas id="chart-solar-dual"></canvas>
+      </div>
+    </div>
+
+  </div><!-- /solar-left -->
+
+  <!-- ════ CENTER 2×2 ════ -->
+  <div class="solar-center">
+
+    <!-- Voltage gauge -->
+    <div class="gauge-card">
+      <span class="gauge-card-label">Voltage</span>
+      <canvas id="gauge-voltage" class="gauge-canvas" width="200" height="114"></canvas>
+      <div class="gauge-value-block">
+        <span class="gauge-value" id="voltage-val">220</span>
+        <span class="gauge-unit">VOLTS (AC)</span>
+      </div>
+      <span class="gauge-subtext">Nominal 220 V</span>
+    </div>
+
+    <!-- Current gauge -->
+    <div class="gauge-card">
+      <span class="gauge-card-label">Current</span>
+      <canvas id="gauge-current" class="gauge-canvas" width="200" height="114"></canvas>
+      <div class="gauge-value-block">
+        <span class="gauge-value" id="current-val">91</span>
+        <span class="gauge-unit">AMPERES</span>
+      </div>
+      <span class="gauge-subtext">Max rated 100 A</span>
+    </div>
+
+    <!-- Battery SOC -->
+    <div class="soc-card">
+      <div class="soc-card-header">
+        <span class="soc-card-label">Battery SOC</span>
+        <span class="soc-pct" id="soc-val">67%</span>
+      </div>
+      <div class="soc-bar-track">
+        <div class="soc-bar-fill" id="soc-bar" style="width:67%"></div>
+      </div>
+      <div class="soc-ticks">
+        <span class="soc-tick">0%</span>
+        <span class="soc-tick">25%</span>
+        <span class="soc-tick">50%</span>
+        <span class="soc-tick">75%</span>
+        <span class="soc-tick">100%</span>
+      </div>
+      <div class="charging-status" id="charging-status">
+        <div class="charging-icon charging-on">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <span style="color:var(--accent);">Charging</span>
+      </div>
+    </div>
+
+    <!-- Solar temperature — full width, 3 vertical readings -->
+    <div class="temp-card">
+      <span class="temp-card-label">Solar Temperature</span>
+      <div class="temp-readings">
+
+        <!-- Ambient -->
+        <div class="temp-reading">
+          <span class="temp-reading-label">Ambient</span>
+          <div class="temp-vbar-track">
+            <!-- −4°C on scale −20→+60 → (−4+20)/80 = 20% -->
+            <div class="temp-vbar-fill temp-ambient-bar" style="height:20%"></div>
+          </div>
+          <span class="temp-reading-value temp-ambient-val">−4°C</span>
+        </div>
+
+        <!-- Panel -->
+        <div class="temp-reading">
+          <span class="temp-reading-label">Panel</span>
+          <div class="temp-vbar-track">
+            <!-- 42°C → (42+20)/80 = 77.5% -->
+            <div class="temp-vbar-fill temp-panel-bar" style="height:77.5%"></div>
+          </div>
+          <span class="temp-reading-value temp-panel-val">42°C</span>
+        </div>
+
+        <!-- Module -->
+        <div class="temp-reading">
+          <span class="temp-reading-label">Module</span>
+          <div class="temp-vbar-track">
+            <!-- 48°C → (48+20)/80 = 85% -->
+            <div class="temp-vbar-fill temp-module-bar" style="height:85%"></div>
+          </div>
+          <span class="temp-reading-value temp-module-val">48°C</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /solar-center -->
+
+  <!-- ════ RIGHT: ALERTS ════ -->
+  <aside class="panel-alerts solar-alerts">
+    <div class="panel-label">
+      <span class="dot dot-yellow blink"></span>
+      Solar Alerts
+    </div>
+    <div class="alerts-list">
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Solar output nominal</span>
+          <span class="alert-time">09:42:10</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Irradiance 850 W/m²</span>
+          <span class="alert-time">09:40:00</span>
+        </div>
+      </div>
+      <div class="alert-item alert-warn">
+        <div class="alert-dot dot-yellow"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Battery SOC below 70%</span>
+          <span class="alert-time">09:35:22</span>
+        </div>
+      </div>
+      <div class="alert-item alert-warn">
+        <div class="alert-dot dot-yellow"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Panel temp 42°C — within range</span>
+          <span class="alert-time">09:30:10</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Voltage stable at 220 V</span>
+          <span class="alert-time">09:25:00</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Array init — 50 kW rated</span>
+          <span class="alert-time">09:00:00</span>
+        </div>
+      </div>
+      <div class="alert-item alert-crit">
+        <div class="alert-dot dot-red"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Low irradiance warning</span>
+          <span class="alert-time">08:20:44</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">System online</span>
+          <span class="alert-time">08:00:00</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+</main>
+
+<!-- ── FOOTER ── -->
+<footer class="site-footer">
+  <span>ENG30002 · Mini-Grid Project · Karazhar, Akmola Region, Kazakhstan</span>
+  <span>Swinburne University of Technology Sarawak</span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="solar.js"></script>
+</body>
+</html>

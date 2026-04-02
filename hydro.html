@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>In-Pipe Hydro — Minigrid System Monitor · Karazhar</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dashboard.css">
+<link rel="stylesheet" href="hydro.css">
+</head>
+<body>
+
+<!-- ── TOP BAR ── -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="site-title">
+      <span class="title-main">Minigrid System Monitor</span>
+      <span class="title-sep">/</span>
+      <a href="village_map.html" class="title-location">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Karazhar
+      </a>
+    </div>
+  </div>
+
+  <nav class="topbar-nav">
+    <a href="index.html" class="nav-link">Overview</a>
+    <a href="solar.html" class="nav-link solar-link">Solar</a>
+    <a href="hydro.html" class="nav-link hydro-link active">Hydro</a>
+    <a href="generator.html" class="nav-link gen-link">Generator</a>
+    <a href="#" class="nav-link">Login</a>
+  </nav>
+
+  <div class="topbar-right">
+    <div class="live-info">
+      <div class="live-time" id="live-time">--:--:--</div>
+      <div class="live-date" id="live-date">-- --- ----</div>
+    </div>
+    <div class="live-weather">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <span>-4°C</span>
+      <span class="weather-loc">Karazhar, KZ</span>
+    </div>
+  </div>
+
+  <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<!-- ── MOBILE NAV DRAWER ── -->
+<nav class="mobile-nav" id="mobile-nav">
+  <a href="index.html" class="nav-link">Overview</a>
+  <a href="solar.html" class="nav-link solar-link">Solar</a>
+  <a href="hydro.html" class="nav-link hydro-link active">Hydro</a>
+  <a href="generator.html" class="nav-link gen-link">Generator</a>
+  <a href="#" class="nav-link">Login</a>
+</nav>
+
+<!-- ── MAIN ── -->
+<main class="hydro-main">
+
+  <!-- ════ LEFT COLUMN ════ -->
+  <div class="hydro-left">
+
+    <!-- Hydro image placeholder -->
+    <div class="hydro-image-card">
+      <div class="hydro-image-inner">
+        <div class="hydro-image-placeholder">
+          <!-- Animated pipe cross-section SVG -->
+          <svg class="pipe-icon" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Outer pipe ring -->
+            <circle cx="32" cy="32" r="30" stroke="#3ecfcf" stroke-width="2" stroke-dasharray="6 3" opacity="0.35"/>
+            <!-- Pipe wall -->
+            <circle cx="32" cy="32" r="26" stroke="#3ecfcf" stroke-width="3" opacity="0.5"/>
+            <!-- Inner bore -->
+            <circle cx="32" cy="32" r="18" stroke="#3ecfcf" stroke-width="1.5" stroke-dasharray="4 2" opacity="0.3"/>
+            <!-- Turbine blades -->
+            <path d="M32 14 L36 28 L32 32 L28 28 Z" fill="#3ecfcf" opacity="0.6"/>
+            <path d="M50 32 L36 36 L32 32 L36 28 Z" fill="#3ecfcf" opacity="0.6"/>
+            <path d="M32 50 L28 36 L32 32 L36 36 Z" fill="#3ecfcf" opacity="0.6"/>
+            <path d="M14 32 L28 28 L32 32 L28 36 Z" fill="#3ecfcf" opacity="0.6"/>
+            <!-- Centre hub -->
+            <circle cx="32" cy="32" r="4" fill="#3ecfcf" opacity="0.9"/>
+          </svg>
+          <span>IMAGE PLACEHOLDER</span>
+          <span class="placeholder-sub">In-Pipe Micro-Hydropower Turbine — 700 mm Pipeline</span>
+        </div>
+      </div>
+      <div class="hydro-image-footer">
+        <span class="hydro-image-label">In-Pipe Hydro — Astana Water Supply Pipeline</span>
+        <span class="hydro-capacity-badge">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          ~250–270 kW rated
+        </span>
+      </div>
+    </div>
+
+    <!-- Dual-line chart: power output vs load -->
+    <div class="hydro-chart-card">
+      <div class="hydro-chart-header">
+        <span class="hydro-chart-title">Power Output vs Load Demand</span>
+        <div class="hydro-chart-legend">
+          <div class="legend-line">
+            <span style="background:#3ecfcf;"></span>
+            Power Out
+          </div>
+          <div class="legend-line">
+            <span style="background:#ff6b6b; opacity:0.8;"></span>
+            Load
+          </div>
+        </div>
+      </div>
+      <div class="hydro-chart-wrap">
+        <canvas id="chart-hydro-dual"></canvas>
+      </div>
+    </div>
+
+  </div><!-- /hydro-left -->
+
+  <!-- ════ CENTER GRID ════ -->
+  <div class="hydro-center">
+
+    <!-- Row 1: Water flow rate line graph — full width -->
+    <div class="flow-chart-card">
+      <div class="flow-chart-header">
+        <span class="flow-chart-title">Water Flow Rate</span>
+        <span class="flow-chart-unit">m³/s</span>
+      </div>
+      <div class="flow-chart-wrap">
+        <canvas id="chart-flow-rate"></canvas>
+      </div>
+    </div>
+
+    <!-- Row 2: Pressure gauge + Pump state -->
+    <div class="pressure-gauge-card">
+      <span class="gauge-card-label">Water Pressure</span>
+      <canvas id="gauge-pressure" class="gauge-canvas" width="200" height="114"></canvas>
+      <div class="gauge-value-block">
+        <span class="gauge-value hydro-gauge-val" id="pressure-val">52</span>
+        <span class="gauge-unit">METRES HEAD</span>
+      </div>
+      <span class="gauge-subtext">Range 26–60 m</span>
+    </div>
+
+    <div class="pump-state-card">
+      <span class="pump-state-label">Water Pump State</span>
+      <div class="pump-indicator" id="pump-indicator">
+        <div class="pump-icon-wrap pump-on">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 2C6 2 2 7 2 12c0 5.52 4.48 10 10 10s10-4.48 10-10C22 7 18 2 12 2z"/>
+            <path d="M12 8v4l3 3"/>
+          </svg>
+        </div>
+        <div class="pump-status-text">
+          <span class="pump-state-value" id="pump-state-val">RUNNING</span>
+          <span class="pump-state-sub">Turbine active · 0.58 m³/s</span>
+        </div>
+      </div>
+      <div class="pump-meta">
+        <div class="pump-meta-item">
+          <span class="pump-meta-label">Pipeline Ø</span>
+          <span class="pump-meta-val">700 mm</span>
+        </div>
+        <div class="pump-meta-item">
+          <span class="pump-meta-label">Hydraulic Head</span>
+          <span class="pump-meta-val">55 m</span>
+        </div>
+        <div class="pump-meta-item">
+          <span class="pump-meta-label">Efficiency</span>
+          <span class="pump-meta-val">~85%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Voltage gauge + Current gauge -->
+    <div class="gauge-card">
+      <span class="gauge-card-label">Voltage</span>
+      <canvas id="gauge-voltage" class="gauge-canvas" width="200" height="114"></canvas>
+      <div class="gauge-value-block">
+        <span class="gauge-value hydro-gauge-val" id="voltage-val">220</span>
+        <span class="gauge-unit">VOLTS (AC)</span>
+      </div>
+      <span class="gauge-subtext">Nominal 220 V</span>
+    </div>
+
+    <div class="gauge-card">
+      <span class="gauge-card-label">Current</span>
+      <canvas id="gauge-current" class="gauge-canvas" width="200" height="114"></canvas>
+      <div class="gauge-value-block">
+        <span class="gauge-value hydro-gauge-val" id="current-val">1136</span>
+        <span class="gauge-unit">AMPERES</span>
+      </div>
+      <span class="gauge-subtext">Rated output load</span>
+    </div>
+
+  </div><!-- /hydro-center -->
+
+  <!-- ════ RIGHT: ALERTS ════ -->
+  <aside class="panel-alerts hydro-alerts">
+    <div class="panel-label">
+      <span class="dot dot-green blink"></span>
+      Hydro Alerts
+    </div>
+    <div class="alerts-list">
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Hydro output nominal</span>
+          <span class="alert-time">09:42:10</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Flow stable at 0.58 m³/s</span>
+          <span class="alert-time">09:40:05</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Pressure 52 m — within range</span>
+          <span class="alert-time">09:38:00</span>
+        </div>
+      </div>
+      <div class="alert-item alert-warn">
+        <div class="alert-dot dot-yellow"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Pressure fluctuation detected</span>
+          <span class="alert-time">09:30:44</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Voltage stable at 220 V</span>
+          <span class="alert-time">09:25:00</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Turbine started — 250 kW</span>
+          <span class="alert-time">09:00:00</span>
+        </div>
+      </div>
+      <div class="alert-item alert-warn">
+        <div class="alert-dot dot-yellow"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Low flow transient — 0.51 m³/s</span>
+          <span class="alert-time">08:45:12</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">System online</span>
+          <span class="alert-time">08:00:00</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+</main>
+
+<!-- ── FOOTER ── -->
+<footer class="site-footer">
+  <span>ENG30002 · Mini-Grid Project · Karazhar, Akmola Region, Kazakhstan</span>
+  <span>Swinburne University of Technology Sarawak</span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="hydro.js"></script>
+</body>
+</html>

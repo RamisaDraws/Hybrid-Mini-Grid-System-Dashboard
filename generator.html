@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generator — Minigrid System Monitor · Karazhar</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dashboard.css">
+<link rel="stylesheet" href="generator.css">
+</head>
+<body>
+
+<!-- ── TOP BAR ── -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="site-title">
+      <span class="title-main">Minigrid System Monitor</span>
+      <span class="title-sep">/</span>
+      <a href="village_map.html" class="title-location">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Karazhar
+      </a>
+    </div>
+  </div>
+
+  <nav class="topbar-nav">
+    <a href="index.html" class="nav-link">Overview</a>
+    <a href="solar.html" class="nav-link solar-link">Solar</a>
+    <a href="hydro.html" class="nav-link hydro-link">Hydro</a>
+    <a href="generator.html" class="nav-link gen-link active">Generator</a>
+    <a href="#" class="nav-link">Login</a>
+  </nav>
+
+  <div class="topbar-right">
+    <div class="live-info">
+      <div class="live-time" id="live-time">--:--:--</div>
+      <div class="live-date" id="live-date">-- --- ----</div>
+    </div>
+    <div class="live-weather">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <span>-4°C</span>
+      <span class="weather-loc">Karazhar, KZ</span>
+    </div>
+  </div>
+
+  <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<!-- ── MOBILE NAV DRAWER ── -->
+<nav class="mobile-nav" id="mobile-nav">
+  <a href="index.html" class="nav-link">Overview</a>
+  <a href="solar.html" class="nav-link solar-link">Solar</a>
+  <a href="hydro.html" class="nav-link hydro-link">Hydro</a>
+  <a href="generator.html" class="nav-link gen-link active">Generator</a>
+  <a href="#" class="nav-link">Login</a>
+</nav>
+
+<!-- ── MAIN ── -->
+<main class="gen-main">
+
+  <!-- ════ LEFT COLUMN ════ -->
+  <div class="gen-left">
+
+    <!-- Generator on/off button + image -->
+    <div class="gen-top-row">
+
+      <!-- On/Off control card -->
+      <div class="gen-control-card">
+        <span class="gen-control-label">Generator Control</span>
+        <div class="gen-status-indicator" id="gen-status-indicator">
+          <div class="gen-status-dot standby" id="gen-status-dot"></div>
+          <span class="gen-status-text" id="gen-status-text">STANDBY</span>
+        </div>
+        <button class="gen-toggle-btn" id="gen-toggle-btn" data-state="off">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+          <span id="gen-btn-label">Start Generator</span>
+        </button>
+        <span class="gen-control-note">Admin access required</span>
+      </div>
+
+      <!-- Generator image placeholder -->
+      <div class="gen-image-card">
+        <div class="gen-image-inner">
+          <div class="gen-image-placeholder">
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+            </svg>
+            <span>IMAGE PLACEHOLDER</span>
+            <span class="placeholder-sub">Diesel Generator — Emergency Backup</span>
+          </div>
+        </div>
+        <div class="gen-image-footer">
+          <span class="gen-image-label">Diesel Generator — Last-Resort Backup</span>
+          <span class="gen-capacity-badge">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Standby
+          </span>
+        </div>
+      </div>
+
+    </div><!-- /gen-top-row -->
+
+    <!-- Dual-line chart -->
+    <div class="gen-chart-card">
+      <div class="gen-chart-header">
+        <span class="gen-chart-title">Power Output vs Load Demand</span>
+        <div class="gen-chart-legend">
+          <div class="legend-line">
+            <span style="background:#ff6b6b;"></span>
+            Power Out
+          </div>
+          <div class="legend-line">
+            <span style="background:#888; opacity:0.8;"></span>
+            Load
+          </div>
+        </div>
+      </div>
+      <div class="gen-chart-wrap">
+        <canvas id="chart-gen-dual"></canvas>
+      </div>
+    </div>
+
+  </div><!-- /gen-left -->
+
+  <!-- ════ CENTER GRID ════ -->
+  <div class="gen-center">
+
+    <!-- Row 1: Voltage | Current | RPM -->
+    <div class="gauge-card">
+      <span class="gauge-card-label">Generator Voltage</span>
+      <canvas id="gauge-gen-voltage" class="gauge-canvas" width="200" height="114"></canvas>
+      <div class="gauge-value-block">
+        <span class="gauge-value gen-gauge-val" id="gen-voltage-val">0</span>
+        <span class="gauge-unit">VOLTS (AC)</span>
+      </div>
+      <span class="gauge-subtext">Nominal 220 V</span>
+    </div>
+
+    <div class="gauge-card">
+      <span class="gauge-card-label">Generator Current</span>
+      <canvas id="gauge-gen-current" class="gauge-canvas" width="200" height="114"></canvas>
+      <div class="gauge-value-block">
+        <span class="gauge-value gen-gauge-val" id="gen-current-val">0</span>
+        <span class="gauge-unit">AMPERES</span>
+      </div>
+      <span class="gauge-subtext">Max rated load</span>
+    </div>
+
+    <div class="gauge-card">
+      <span class="gauge-card-label">Engine RPM</span>
+      <canvas id="gauge-rpm" class="gauge-canvas" width="200" height="114"></canvas>
+      <div class="gauge-value-block">
+        <span class="gauge-value gen-gauge-val" id="rpm-val">0</span>
+        <span class="gauge-unit">RPM</span>
+      </div>
+      <span class="gauge-subtext">Rated 1500 RPM</span>
+    </div>
+
+    <!-- Row 2: Temp bars (gen + coolant) | Fuel bar | Water bar | Frequency gauge -->
+    <div class="bar-group-card">
+
+      <div class="vbar-item">
+        <span class="vbar-label">Gen Temp</span>
+        <div class="vbar-track">
+          <div class="vbar-fill vbar-gen-temp" id="vbar-gen-temp" style="height:0%"></div>
+        </div>
+        <span class="vbar-value gen-temp-col" id="gen-temp-val">—</span>
+        <span class="vbar-unit">°C</span>
+      </div>
+
+      <div class="vbar-item">
+        <span class="vbar-label">Coolant</span>
+        <div class="vbar-track">
+          <div class="vbar-fill vbar-coolant" id="vbar-coolant" style="height:0%"></div>
+        </div>
+        <span class="vbar-value coolant-col" id="coolant-val">—</span>
+        <span class="vbar-unit">°C</span>
+      </div>
+
+      <div class="vbar-item">
+        <span class="vbar-label">Fuel</span>
+        <div class="vbar-track">
+          <div class="vbar-fill vbar-fuel" id="vbar-fuel" style="height:0%"></div>
+        </div>
+        <span class="vbar-value fuel-col" id="fuel-val">—</span>
+        <span class="vbar-unit">%</span>
+      </div>
+
+      <div class="vbar-item">
+        <span class="vbar-label">Water</span>
+        <div class="vbar-track">
+          <div class="vbar-fill vbar-water" id="vbar-water" style="height:0%"></div>
+        </div>
+        <span class="vbar-value water-col" id="water-val">—</span>
+        <span class="vbar-unit">%</span>
+      </div>
+
+    </div><!-- /bar-group-card -->
+
+    <div class="gauge-card freq-gauge-card">
+      <span class="gauge-card-label">Frequency</span>
+      <canvas id="gauge-freq" class="gauge-canvas" width="200" height="114"></canvas>
+      <div class="gauge-value-block">
+        <span class="gauge-value gen-gauge-val" id="freq-val">0</span>
+        <span class="gauge-unit">HERTZ</span>
+      </div>
+      <span class="gauge-subtext">Nominal 50 Hz</span>
+    </div>
+
+    <!-- Row 3: Battery Voltage | Battery Current | ATS Status -->
+    <div class="gauge-card">
+      <span class="gauge-card-label">Battery Voltage</span>
+      <canvas id="gauge-bat-voltage" class="gauge-canvas" width="200" height="114"></canvas>
+      <div class="gauge-value-block">
+        <span class="gauge-value gen-gauge-val" id="bat-voltage-val">24</span>
+        <span class="gauge-unit">VOLTS (DC)</span>
+      </div>
+      <span class="gauge-subtext">Nominal 24 V DC</span>
+    </div>
+
+    <div class="gauge-card">
+      <span class="gauge-card-label">Battery Current</span>
+      <canvas id="gauge-bat-current" class="gauge-canvas" width="200" height="114"></canvas>
+      <div class="gauge-value-block">
+        <span class="gauge-value gen-gauge-val" id="bat-current-val">0</span>
+        <span class="gauge-unit">AMPERES</span>
+      </div>
+      <span class="gauge-subtext">Charge / discharge</span>
+    </div>
+
+    <!-- ATS Status card -->
+    <div class="ats-card">
+      <span class="ats-label">ATS Status</span>
+      <div class="ats-indicator" id="ats-indicator">
+        <div class="ats-source" id="ats-grid">
+          <div class="ats-icon ats-icon-active">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <span class="ats-source-label">Grid / Hydro</span>
+          <span class="ats-source-badge active" id="ats-grid-badge">ACTIVE</span>
+        </div>
+        <div class="ats-divider">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div class="ats-source" id="ats-gen-src">
+          <div class="ats-icon ats-icon-standby">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+          <span class="ats-source-label">Generator</span>
+          <span class="ats-source-badge standby" id="ats-gen-badge">STANDBY</span>
+        </div>
+      </div>
+      <div class="ats-meta">
+        <span class="ats-meta-label">Transfer Switch</span>
+        <span class="ats-meta-val" id="ats-switch-val">Automatic</span>
+      </div>
+    </div>
+
+  </div><!-- /gen-center -->
+
+  <!-- ════ RIGHT: ALERTS ════ -->
+  <aside class="panel-alerts gen-alerts">
+    <div class="panel-label">
+      <span class="dot dot-yellow"></span>
+      Generator Alerts
+    </div>
+    <div class="alerts-list">
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Generator on standby</span>
+          <span class="alert-time">09:42:10</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">ATS on grid / hydro source</span>
+          <span class="alert-time">09:40:00</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Battery 24 V nominal</span>
+          <span class="alert-time">09:35:00</span>
+        </div>
+      </div>
+      <div class="alert-item alert-warn">
+        <div class="alert-dot dot-yellow"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Fuel level at 72%</span>
+          <span class="alert-time">09:30:22</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Last test run successful</span>
+          <span class="alert-time">08:00:00</span>
+        </div>
+      </div>
+      <div class="alert-item alert-crit">
+        <div class="alert-dot dot-red"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Grid outage — ATS triggered</span>
+          <span class="alert-time">07:54:33</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Generator auto-start OK</span>
+          <span class="alert-time">07:54:45</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">System online</span>
+          <span class="alert-time">07:00:00</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+</main>
+
+<!-- ── FOOTER ── -->
+<footer class="site-footer">
+  <span>ENG30002 · Mini-Grid Project · Karazhar, Akmola Region, Kazakhstan</span>
+  <span>Swinburne University of Technology Sarawak</span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="generator.js"></script>
+</body>
+</html>

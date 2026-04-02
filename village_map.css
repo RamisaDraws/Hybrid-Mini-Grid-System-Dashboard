@@ -1,0 +1,249 @@
+/* ════════════════════════════════════════════════
+   village_map.css
+   Karazhar Village — Interactive Map Styles
+   ════════════════════════════════════════════════ */
+
+/* ── CSS Variables (shared design tokens) ── */
+:root {
+    --bg:        #060a0f;
+    --surface:   #0d1520;
+    --border:    #1a2a3a;
+    --accent:    #00e5a0;
+    --accent2:   #ff6b6b;
+    --text:      #c8d8f0;
+    --muted:     #4a6080;
+    --card-bg:   #111c2b;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    
+    overflow-x: hidden;
+}
+
+/* ── Header ─────────────────────────────────── */
+.site-header {
+    padding: 1.2rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: rgba(6,10,15,0.9);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.site-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    letter-spacing: 0.08em;
+    color: #fff;
+}
+.site-header h1 span { color: var(--accent); }
+
+.header-tag {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+}
+
+/* ── Page layout ─────────────────────────────── */
+.page-wrap {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    
+    padding: 1rem;
+}
+
+/* ── Map section ─────────────────────────────── */
+.map-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.map-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    align-self: flex-start;
+}
+
+/* ── Map container ───────────────────────────── */
+.map-container {
+    position: relative;
+    width: 100%;
+    max-width: 750px;
+    cursor: default;
+}
+
+.map-container img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+/* Base layer — the green border frame */
+.map-base {
+    position: relative;
+    z-index: 1;
+    border-radius: 8px;
+}
+
+/* Hotspot layers — all stacked on top, always visible */
+.hotspot-layer {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    cursor: pointer;
+    opacity: 1;
+    transition: filter 0.25s ease;
+    z-index: 2;
+    pointer-events: none; /* JS handles all events via hit-test */
+}
+
+.hotspot-layer.hovered {
+    filter: brightness(1.5) saturate(1.6) drop-shadow(0 0 12px rgba(255,180,100,0.8));
+    z-index: 3;
+}
+
+/* Pulse animation on clicked/active blob */
+@keyframes blobPulse {
+    0%   { filter: brightness(1.6) saturate(1.8) drop-shadow(0 0 14px rgba(0,229,160,0.8)); }
+    50%  { filter: brightness(1.3) saturate(1.4) drop-shadow(0 0 6px  rgba(0,229,160,0.4)); }
+    100% { filter: brightness(1.6) saturate(1.8) drop-shadow(0 0 14px rgba(0,229,160,0.8)); }
+}
+.hotspot-layer.active {
+    animation: blobPulse 1.8s ease-in-out infinite;
+    z-index: 3;
+}
+
+/* ── Modal styling ───────────────────────────── */
+.modal-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    color: var(--text);
+}
+.modal-header {
+    border-bottom: 1px solid var(--border);
+    padding: 1.2rem 1.5rem;
+}
+.modal-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.modal-title .type-badge {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+}
+.badge-residential { background: rgba(232,115,106,0.2); color: #e8736a; border: 1px solid rgba(232,115,106,0.3); }
+.badge-facility    { background: rgba(76,217,122,0.2);  color: #4cd97a; border: 1px solid rgba(76,217,122,0.3);  }
+.badge-commercial  { background: rgba(200,149,106,0.2); color: #c8956a; border: 1px solid rgba(200,149,106,0.3); }
+.badge-solar     { background: rgba(250,199,117,0.2); color: #c89000; border: 1px solid rgba(250,199,117,0.3); }
+.badge-hydro     { background: rgba(29,158,117,0.2);  color: #1d9e75; border: 1px solid rgba(29,158,117,0.3);  }
+.badge-generator { background: rgba(216,90,48,0.2);   color: #d85a30; border: 1px solid rgba(216,90,48,0.3);   }
+
+.modal-body { padding: 1.5rem; }
+.modal-body p {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--text);
+    margin-bottom: 1rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.info-chip {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.78rem;
+}
+.info-chip .chip-label {
+    color: var(--muted);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 0.2rem;
+}
+.info-chip .chip-val {
+    color: var(--text);
+    font-weight: 500;
+}
+
+.modal-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--accent);
+    font-size: 0.82rem;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(0,229,160,0.3);
+    padding-bottom: 1px;
+    transition: border-color 0.2s;
+    margin-right: 1rem;
+}
+.modal-link:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-close-custom {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 0.4rem 1rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    font-family: 'DM Sans', sans-serif;
+}
+.btn-close-custom:hover { background: var(--border); border-color: var(--muted); }
+
+/* ── Responsive ──────────────────────────────── */
+
+/* Medium (tablet) */
+@media (max-width: 1100px) {
+    .page-wrap { padding: 1.5rem; }
+    .map-container { max-width: 600px; }
+}
+
+/* Small (phone) */
+@media (max-width: 576px) {
+    .site-header { padding: 0.9rem 1rem; }
+    .header-tag { display: none; }
+    .page-wrap { padding: 0.8rem; }
+    .map-container { max-width: 100%; }
+    .info-grid { grid-template-columns: 1fr; }
+    .modal-dialog { margin: 0.5rem; }
+    .modal-content { border-radius: 12px; }
+}

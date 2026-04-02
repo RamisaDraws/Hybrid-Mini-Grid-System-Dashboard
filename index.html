@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minigrid System Monitor — Karazhar</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+
+<!-- ── TOP BAR ── -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="site-title">
+      <span class="title-main">Minigrid System Monitor</span>
+      <span class="title-sep">/</span>
+      <a href="village_map.html" class="title-location">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Karazhar
+      </a>
+    </div>
+  </div>
+
+  <nav class="topbar-nav">
+    <a href="index.html" class="nav-link active">Overview</a>
+    <a href="solar.html" class="nav-link solar-link">Solar</a>
+    <a href="hydro.html" class="nav-link hydro-link">Hydro</a>
+    <a href="generator.html" class="nav-link gen-link">Generator</a>
+    <a href="#" class="nav-link">Login</a>
+  </nav>
+
+  <div class="topbar-right">
+    <div class="live-info">
+      <div class="live-time" id="live-time">--:--:--</div>
+      <div class="live-date" id="live-date">-- --- ----</div>
+    </div>
+    <div class="live-weather">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <span>-4°C</span>
+      <span class="weather-loc">Karazhar, KZ</span>
+    </div>
+  </div>
+
+  <!-- Hamburger — mobile only -->
+  <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</header>
+
+<!-- ── MOBILE NAV DRAWER ── -->
+<nav class="mobile-nav" id="mobile-nav">
+  <a href="index.html" class="nav-link active">Overview</a>
+  <a href="solar.html" class="nav-link solar-link">Solar</a>
+  <a href="hydro.html" class="nav-link hydro-link">Hydro</a>
+  <a href="generator.html" class="nav-link gen-link">Generator</a>
+  <a href="#" class="nav-link">Login</a>
+</nav>
+
+<!-- ── MAIN LAYOUT ── -->
+<main class="dashboard-main">
+
+  <!-- LEFT: Map -->
+  <section class="panel-map">
+    <div class="panel-label">
+      <span class="dot dot-green"></span>
+      Community Map
+    </div>
+    <div class="map-embed-wrap" id="map-embed-wrap">
+      <iframe
+        id="map-iframe"
+        class="map-iframe"
+        src="village_map.html"
+        title="Karazhar Village Map"
+        scrolling="no"
+      ></iframe>
+    </div>
+  </section>
+
+  <!-- MIDDLE: Energy source rows -->
+  <section class="panel-sources">
+
+    <!-- ── SOLAR ROW ── -->
+    <div class="source-row solar-row">
+      <div class="source-card source-stats">
+        <div class="source-header">
+          <div class="source-icon solar-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          </div>
+          <span class="source-name">Solar PV</span>
+          <span class="status-badge status-online">Active</span>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-item">
+            <span class="stat-label">Voltage</span>
+            <span class="stat-value solar-val">220 <span class="stat-unit">V</span></span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Current</span>
+            <span class="stat-value solar-val">91 <span class="stat-unit">A</span></span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Power</span>
+            <span class="stat-value solar-val">20.0 <span class="stat-unit">kW</span></span>
+          </div>
+        </div>
+        <a href="solar.html" class="btn-source solar-btn">View Solar →</a>
+      </div>
+      <div class="source-card source-graph">
+        <div class="graph-header">
+          <span class="graph-title">Solar — Generated Energy</span>
+          <span class="graph-unit">kWh</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chart-solar"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HYDRO ROW ── -->
+    <div class="source-row hydro-row">
+      <div class="source-card source-stats">
+        <div class="source-header">
+          <div class="source-icon hydro-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6 2 2 7 2 12c0 5.52 4.48 10 10 10s10-4.48 10-10C22 7 18 2 12 2z"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <span class="source-name">In-pipe Hydro</span>
+          <span class="status-badge status-online">Active</span>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-item">
+            <span class="stat-label">Voltage</span>
+            <span class="stat-value hydro-val">220 <span class="stat-unit">V</span></span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Current</span>
+            <span class="stat-value hydro-val">1136 <span class="stat-unit">A</span></span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Power</span>
+            <span class="stat-value hydro-val">250 <span class="stat-unit">kW</span></span>
+          </div>
+        </div>
+        <a href="hydro.html" class="btn-source hydro-btn">View Hydro →</a>
+      </div>
+      <div class="source-card source-graph">
+        <div class="graph-header">
+          <span class="graph-title">Hydro — Generated Energy</span>
+          <span class="graph-unit">kWh</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chart-hydro"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── GENERATOR ROW ── -->
+    <div class="source-row gen-row">
+      <div class="source-card source-stats">
+        <div class="source-header">
+          <div class="source-icon gen-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+          <span class="source-name">Diesel Generator</span>
+          <span class="status-badge status-standby">Standby</span>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-item">
+            <span class="stat-label">Voltage</span>
+            <span class="stat-value gen-val">— <span class="stat-unit">V</span></span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Current</span>
+            <span class="stat-value gen-val">— <span class="stat-unit">A</span></span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Power</span>
+            <span class="stat-value gen-val">0 <span class="stat-unit">kW</span></span>
+          </div>
+        </div>
+        <a href="generator.html" class="btn-source gen-btn">View Generator →</a>
+      </div>
+      <div class="source-card source-graph">
+        <div class="graph-header">
+          <span class="graph-title">Generator — Generated Energy</span>
+          <span class="graph-unit">kWh</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chart-gen"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- RIGHT: Alerts sidebar -->
+  <aside class="panel-alerts">
+    <div class="panel-label">
+      <span class="dot dot-red blink"></span>
+      Alerts
+    </div>
+    <div class="alerts-list">
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Solar output nominal</span>
+          <span class="alert-time">09:42:10</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Hydro flow stable at 0.58 m³/s</span>
+          <span class="alert-time">09:40:05</span>
+        </div>
+      </div>
+      <div class="alert-item alert-warn">
+        <div class="alert-dot dot-yellow"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Battery SOC below 40%</span>
+          <span class="alert-time">09:35:22</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Generator on standby</span>
+          <span class="alert-time">09:30:00</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">System initialised</span>
+          <span class="alert-time">09:00:00</span>
+        </div>
+      </div>
+      <div class="alert-item alert-crit">
+        <div class="alert-dot dot-red"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Grid outage detected</span>
+          <span class="alert-time">08:54:33</span>
+        </div>
+      </div>
+      <div class="alert-item alert-info">
+        <div class="alert-dot dot-green"></div>
+        <div class="alert-body">
+          <span class="alert-msg">Hydro turbine started</span>
+          <span class="alert-time">08:50:11</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+</main>
+
+<!-- ── FOOTER ── -->
+<footer class="site-footer">
+  <span>ENG30002 · Mini-Grid Project · Karazhar, Akmola Region, Kazakhstan</span>
+  <span>Swinburne University of Technology Sarawak</span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="dashboard.js"></script>
+<script>
+  /* ── Hamburger toggle ── */
+  const hamburgerBtn = document.getElementById('hamburger-btn');
+  const mobileNav    = document.getElementById('mobile-nav');
+  hamburgerBtn.addEventListener('click', () => mobileNav.classList.toggle('open'));
+  mobileNav.querySelectorAll('.nav-link').forEach(link =>
+    link.addEventListener('click', () => mobileNav.classList.remove('open'))
+  );
+
+  /* ── iframe auto-height ────────────────────────────────────────
+     village_map.html posts { type:'mapHeight', height:N } to parent.
+     We apply that height to both the iframe and its wrapper with
+     NO maximum — the full map always shows, no internal scrollbar.
+  ──────────────────────────────────────────────────────────────── */
+  const mapIframe = document.getElementById('map-iframe');
+  const mapWrap   = document.getElementById('map-embed-wrap');
+
+  function applyMapHeight(h) {
+    if (!h || h < 100) return;
+    mapIframe.style.height = h + 'px';
+    mapWrap.style.height   = h + 'px';
+  }
+
+  /* Primary: postMessage from village_map.html */
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'mapHeight') {
+      applyMapHeight(e.data.height);
+    }
+  });
+
+  /* Fallback: read contentDocument directly (same-origin) */
+  mapIframe.addEventListener('load', () => {
+    try {
+      const doc = mapIframe.contentDocument || mapIframe.contentWindow.document;
+      applyMapHeight(doc.documentElement.scrollHeight);
+    } catch (err) { /* cross-origin — postMessage will handle */ }
+  });
+</script>
+</body>
+</html>

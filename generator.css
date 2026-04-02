@@ -1,0 +1,697 @@
+/* ════════════════════════════════════════════════
+   generator.css
+   Karazhar Minigrid — Diesel Generator Page
+   Extends dashboard.css design tokens
+   ════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════
+   LARGE — 3-column grid (>1100px)
+   Left: 560px | Center: 1fr | Alerts: 200px
+══════════════════════════════════════ */
+.gen-main {
+  display: grid;
+  grid-template-columns: 560px 1fr 200px;
+  grid-template-areas: "left center alerts";
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  align-items: start;
+  flex: 1;
+}
+
+.gen-left {
+  grid-area: left;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Center: 3-col grid (matches wireframe) */
+.gen-center {
+  grid-area: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
+.gen-alerts {
+  grid-area: alerts;
+  position: sticky;
+  top: calc(56px + 1rem);
+}
+
+/* ── Page-load animations ── */
+.gen-top-row     { animation: fadeUp 0.4s ease both; }
+.gen-chart-card  { animation: fadeUp 0.4s ease 0.1s both; }
+.gauge-card      { animation: fadeUp 0.4s ease 0.15s both; }
+.bar-group-card  { animation: fadeUp 0.4s ease 0.2s both; }
+.ats-card        { animation: fadeUp 0.4s ease 0.25s both; }
+
+/* ══════════════════════
+   LEFT TOP ROW
+   Control card + Image side by side
+══════════════════════ */
+.gen-top-row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 1rem;
+}
+
+/* ── Generator on/off control card ── */
+.gen-control-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--gen);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.gen-control-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  align-self: flex-start;
+}
+
+.gen-status-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.gen-status-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+
+.gen-status-dot.standby {
+  background: rgba(255, 107, 107, 0.1);
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+.gen-status-dot.running {
+  background: rgba(0, 229, 160, 0.15);
+  border-color: rgba(0, 229, 160, 0.4);
+}
+
+@keyframes runPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 229, 160, 0.3); }
+  50%       { box-shadow: 0 0 0 8px rgba(0, 229, 160, 0); }
+}
+.gen-status-dot.running {
+  animation: runPulse 2s ease-in-out infinite;
+}
+
+.gen-status-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--gen);
+}
+
+.gen-status-text.running-text { color: var(--accent); }
+
+/* Power toggle button */
+.gen-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  background: rgba(255, 107, 107, 0.1);
+  color: var(--gen);
+  font-family: 'Syne', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.gen-toggle-btn:hover {
+  background: rgba(255, 107, 107, 0.2);
+  border-color: rgba(255, 107, 107, 0.5);
+}
+
+.gen-toggle-btn.active {
+  background: rgba(0, 229, 160, 0.12);
+  border-color: rgba(0, 229, 160, 0.35);
+  color: var(--accent);
+}
+
+.gen-toggle-btn.active:hover {
+  background: rgba(0, 229, 160, 0.2);
+}
+
+.gen-control-note {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ── Generator image card ── */
+.gen-image-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--gen);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.gen-image-inner {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 140px;
+  background: #100808;
+  overflow: hidden;
+}
+
+.gen-image-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #100808 0%, #180d0d 60%, #100808 100%);
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.gen-image-placeholder svg {
+  color: var(--gen);
+  opacity: 0.3;
+}
+
+.gen-image-placeholder span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--gen);
+  letter-spacing: 0.14em;
+  opacity: 0.5;
+}
+
+.gen-image-placeholder .placeholder-sub {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+  opacity: 1;
+  text-align: center;
+}
+
+.gen-image-footer {
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.gen-image-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.gen-capacity-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--gen);
+  background: var(--gen-dim);
+  border: 1px solid rgba(255, 107, 107, 0.2);
+  padding: 0.18rem 0.55rem;
+  border-radius: 5px;
+}
+
+/* ══════════════════════
+   CHART CARD (power vs load)
+══════════════════════ */
+.gen-chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--gen);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.gen-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.gen-chart-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.gen-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.legend-line {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.legend-line span {
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  display: block;
+}
+
+.gen-chart-wrap {
+  position: relative;
+  width: 100%;
+  min-height: 170px;
+}
+
+/* ══════════════════════
+   CENTER GAUGE CARDS (shared)
+══════════════════════ */
+.gauge-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.gauge-card-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  align-self: center;
+}
+
+.gauge-canvas {
+  display: block;
+  width: 100% !important;
+  max-width: 200px;
+  height: auto !important;
+}
+
+.gauge-value-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: -6px;
+}
+
+.gen-gauge-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--gen);
+}
+
+.gen-gauge-val.running-val { color: var(--accent); }
+
+.gauge-unit {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.63rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+}
+
+.gauge-subtext {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+
+/* ══════════════════════
+   VERTICAL BAR GROUP CARD
+   (gen temp | coolant temp | fuel | water)
+   Spans 2 of the 3 center columns.
+══════════════════════ */
+.bar-group-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-around;
+  gap: 0.5rem;
+  grid-column: span 2;
+}
+
+.vbar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.vbar-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.vbar-track {
+  width: 18px;
+  height: 80px;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.vbar-fill {
+  width: 100%;
+  border-radius: 4px;
+  transition: height 0.6s ease;
+}
+
+/* Colour tokens per bar */
+.vbar-gen-temp { background: linear-gradient(0deg, #ff6b6b, #ff9a9a); }
+.vbar-coolant  { background: linear-gradient(0deg, #3ecfcf, #7de8e8); }
+.vbar-fuel     { background: linear-gradient(0deg, #f5c842, #ffd700); }
+.vbar-water    { background: linear-gradient(0deg, #6b8eff, #9ab4ff); }
+
+.vbar-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.gen-temp-col  { color: var(--gen); }
+.coolant-col   { color: var(--hydro); }
+.fuel-col      { color: var(--solar); }
+.water-col     { color: #6b8eff; }
+
+.vbar-unit {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+}
+
+/* Frequency gauge card — same row as bar group */
+.freq-gauge-card {
+  /* inherits .gauge-card styles */
+}
+
+/* ══════════════════════
+   ATS STATUS CARD
+══════════════════════ */
+.ats-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ats-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.ats-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ats-source {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.ats-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ats-icon-active {
+  background: rgba(0, 229, 160, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(0, 229, 160, 0.3);
+}
+
+.ats-icon-standby {
+  background: rgba(100, 100, 100, 0.1);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+
+.ats-icon-running {
+  background: rgba(255, 107, 107, 0.12);
+  color: var(--gen);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.ats-source-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.ats-source-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 20px;
+}
+
+.ats-source-badge.active {
+  background: rgba(0, 229, 160, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(0, 229, 160, 0.25);
+}
+
+.ats-source-badge.standby {
+  background: rgba(100, 100, 100, 0.1);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+
+.ats-source-badge.running {
+  background: rgba(255, 107, 107, 0.12);
+  color: var(--gen);
+  border: 1px solid rgba(255, 107, 107, 0.25);
+}
+
+.ats-divider {
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.ats-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+}
+
+.ats-meta-label {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ats-meta-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text);
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE — MEDIUM-LARGE (≤1100px)
+   2-column: [left + center stacked] | alerts
+══════════════════════════════════════ */
+@media (max-width: 1100px) {
+  .gen-main {
+    grid-template-columns: 1fr 200px;
+    grid-template-areas:
+      "left   alerts"
+      "center alerts";
+  }
+
+  .gen-alerts {
+    position: sticky;
+    top: calc(56px + 1rem);
+  }
+
+  .gen-center {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .gen-chart-wrap { min-height: 250px; }
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE — MEDIUM (≤850px)
+   Single column, alerts → horizontal chips
+══════════════════════════════════════ */
+@media (max-width: 850px) {
+  .gen-main {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "left"
+      "center"
+      "alerts";
+  }
+
+  .gen-alerts {
+    position: static;
+  }
+
+  .gen-alerts .alerts-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .gen-alerts .alert-item {
+    flex: 1 1 200px;
+    max-width: 300px;
+  }
+
+  .gen-center {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .gen-chart-wrap { min-height: 250px; }
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE — SMALL (≤700px)
+   Phone layout — single column throughout.
+   Topbar hamburger handled by dashboard.css.
+══════════════════════════════════════ */
+@media (max-width: 700px) {
+  .gen-main {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "left"
+      "center"
+      "alerts";
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  /* Control + image stack vertically */
+  .gen-top-row {
+    grid-template-columns: 1fr;
+  }
+
+  .gen-image-inner,
+  .gen-image-placeholder {
+    min-height: 120px;
+  }
+
+  /* Center: 2-col gauges on phone */
+  .gen-center {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Bar group already spans 2col on large; on phone force full width */
+  .bar-group-card {
+    grid-column: 1 / -1;
+  }
+
+  /* ATS spans full width */
+  .ats-card {
+    grid-column: 1 / -1;
+  }
+
+  .gen-gauge-val { font-size: 1.6rem; }
+
+  /* Alerts vertical scroll */
+  .gen-alerts {
+    position: static;
+  }
+
+  .gen-alerts .alerts-list {
+    flex-direction: column;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+
+  .gen-alerts .alert-item {
+    flex: none;
+    max-width: none;
+  }
+}
