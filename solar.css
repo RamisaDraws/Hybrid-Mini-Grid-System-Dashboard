@@ -10,7 +10,7 @@
 ══════════════════════════════════════ */
 .solar-main {
   display: grid;
-  grid-template-columns: 650px 1fr 200px;
+  grid-template-columns: minmax(0, 650px) 1fr 200px;
   grid-template-areas: "left center alerts";
   gap: 1rem;
   padding: 1rem 1.5rem;
@@ -145,6 +145,7 @@
   flex-direction: column;
   gap: 0.75rem;
   flex: 1;
+  min-width: 0;
 }
 
 .chart-card-header {
@@ -221,6 +222,7 @@
   width: 100% !important;
   max-width: 200px;
   height: auto !important;
+  min-width: 0;
 }
 
 .gauge-value-block {
@@ -435,6 +437,8 @@
   transition: height 0.6s ease;
 }
 
+
+
 .temp-ambient-bar { background: linear-gradient(0deg, #3ecfcf, #5de8e8); }
 .temp-panel-bar   { background: linear-gradient(0deg, #f5c842, #ffd700); }
 .temp-module-bar  { background: linear-gradient(0deg, #ff9a3c, #ffb56b); }
@@ -444,36 +448,9 @@
 .temp-big-label { font-size: 0.6rem; color: var(--text-dim); text-align: center; letter-spacing: 0.06em; margin-top: 2px; }
 
 /* ══════════════════════════════════════
-   RESPONSIVE — MEDIUM-LARGE (≤1100px)
-   2-column: [left + center stacked] | alerts sidebar
-   Alerts stay sticky on the right.
+   RESPONSIVE — ≤1100px
 ══════════════════════════════════════ */
 @media (max-width: 1100px) {
-  .solar-main {
-    grid-template-columns: 1fr 200px;
-    grid-template-areas:
-      "left   alerts"
-      "center alerts";
-  }
-
-  .solar-alerts {
-    position: sticky;
-    top: calc(56px + 1rem);
-  }
-
-  .solar-center {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .chart-wrap-lg { min-height: 200px; }
-}
-
-/* ══════════════════════════════════════
-   RESPONSIVE — MEDIUM (≤850px)
-   Single column: left → center → alerts
-   Alerts become horizontal wrapping chips.
-══════════════════════════════════════ */
-@media (max-width: 850px) {
   .solar-main {
     grid-template-columns: 1fr;
     grid-template-areas:
@@ -501,24 +478,99 @@
   .solar-center {
     grid-template-columns: 1fr 1fr;
   }
-
-  .chart-wrap-lg { min-height: 200px; }
 }
 
 /* ══════════════════════════════════════
-   RESPONSIVE — SMALL (≤700px)
-   Everything single column.
-   Center cards stack 1-col.
-   Alerts stack vertically with scroll.
+   RESPONSIVE — ≤700px
 ══════════════════════════════════════ */
 @media (max-width: 700px) {
   .solar-main {
     padding: 0.75rem;
     gap: 0.75rem;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .gauge-card{
+    min-width: 0;
+    
+  }
+  .gauge-value {
+    font-size: 1.5rem;  /* already there, keep it */
+    white-space: nowrap;
+    
+    text-overflow: ellipsis;
+  }
+
+  .gauge-unit {
+    font-size: 0.58rem;
+    letter-spacing: 0.04em;  /* reduce from 0.1em */
+    white-space: nowrap;
+    
+    text-overflow: ellipsis;
+  }
+  .gauge-subtext {
+    font-size: 0.58rem;
+    text-align: center;
+    white-space: nowrap;
+    
+    text-overflow: ellipsis;
+  }
+
+  .soc-card {
+    min-width: 0;
+    
+  }
+
+  .soc-pct {
+    font-size: 1.5rem;  /* already there, keep it */
+  }
+
+  .soc-tick {
+    font-size: 0.5rem;  /* reduce from 0.58rem — 5 ticks can crowd on narrow screens */
+    letter-spacing: 0;
   }
 
   .solar-center {
     grid-template-columns: 1fr;
+  }
+
+  /* Prevent gauge/SOC/temp cards from overflowing viewport */
+  .gauge-card,
+  .soc-card,
+  .temp-card {
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  /* Temp readings: stack to 1-column on narrow screens */
+  .temp-readings {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .temp-reading {
+    padding: 0.6rem 0.4rem;
+    min-width: 0;
+  }
+
+  .temp-reading-value {
+    font-size: 1.2rem;
+  }
+
+  .temp-reading-label {
+    font-size: 0.52rem;
+    letter-spacing: 0.08em;
+  }
+
+  .temp-vbar-track {
+    height: 45px;
+  }
+
+  /* Gauge canvas — constrain within card */
+  .gauge-canvas {
+    max-width: 160px;
   }
 
   .solar-alerts .alerts-list {
@@ -532,13 +584,75 @@
     max-width: none;
   }
 
-  .gauge-value { font-size: 1.6rem; }
-  .soc-pct     { font-size: 1.6rem; }
-  .temp-big    { font-size: 1.6rem; }
+  .solar-left,
+  .solar-center,
+  .solar-alerts {
+    min-width: 0;
+  }
+
+  .solar-image-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  .chart-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  .gauge-value { font-size: 1.5rem; }
+  .soc-pct     { font-size: 1.5rem; }
 
   .site-footer {
     flex-direction: column;
     gap: 0.3rem;
     text-align: center;
+  }
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE — ≤380px (extra-small)
+   Temp readings collapse further
+══════════════════════════════════════ */
+@media (max-width: 380px) {
+  .temp-readings {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.3rem;
+  }
+
+  .temp-reading {
+    padding: 0.5rem 0.25rem;
+  }
+
+  .temp-reading-value {
+    font-size: 1rem;
+  }
+
+  .temp-reading-label {
+    font-size: 0.48rem;
+    letter-spacing: 0.05em;
+  }
+
+  .temp-vbar-track {
+    height: 35px;
+    width: 5px;
+  }
+
+  .gauge-value {
+    font-size: 1.3rem;
+  }
+
+  .soc-pct {
+    font-size: 1.3rem;
+  }
+
+  .soc-tick {
+    font-size: 0.45rem;
+  }
+
+  .gauge-unit {
+    font-size: 0.5rem;
   }
 }
