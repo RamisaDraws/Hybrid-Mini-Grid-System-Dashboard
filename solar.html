@@ -38,7 +38,7 @@
     </div>
     <div class="live-weather">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-      <span>-4°C</span>
+      <span id="weather-temp">--°C</span>
       <span class="weather-loc">Karazhar, KZ</span>
     </div>
   </div>
@@ -66,7 +66,7 @@
     <!-- Solar photo -->
     <div class="solar-image-card">
       <div class="solar-image-inner">
-        <img src="14.jpg" alt="Rooftop Solar PV Array — Karazhar"
+        <img src="images/14.jpg" alt="Rooftop Solar PV Array — Karazhar"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
         <div class="solar-image-placeholder">
           <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -93,19 +93,11 @@
       <div class="chart-card-header">
         <span class="chart-card-title">Power Output vs Load Demand</span>
         <div class="chart-legend">
-          <div class="legend-line">
-            <span style="background:#f5c842;"></span>
-            Power Out
-          </div>
-          <div class="legend-line">
-            <span style="background:#ff6b6b; opacity:0.8;"></span>
-            Load
-          </div>
+          <div class="legend-line"><span style="background:#f5c842;"></span>Power Out</div>
+          <div class="legend-line"><span style="background:#ff6b6b; opacity:0.8;"></span>Load</div>
         </div>
       </div>
-      <div class="chart-wrap-lg">
-        <canvas id="chart-solar-dual"></canvas>
-      </div>
+      <div class="chart-wrap-lg"><canvas id="chart-solar-dual"></canvas></div>
     </div>
 
   </div><!-- /solar-left -->
@@ -118,7 +110,7 @@
       <span class="gauge-card-label">Voltage</span>
       <canvas id="gauge-voltage" class="gauge-canvas" width="200" height="114"></canvas>
       <div class="gauge-value-block">
-        <span class="gauge-value" id="voltage-val">220</span>
+        <span class="gauge-value" id="voltage-val">--</span>
         <span class="gauge-unit">VOLTS (AC)</span>
       </div>
       <span class="gauge-subtext">Nominal 220 V</span>
@@ -129,7 +121,7 @@
       <span class="gauge-card-label">Current</span>
       <canvas id="gauge-current" class="gauge-canvas" width="200" height="114"></canvas>
       <div class="gauge-value-block">
-        <span class="gauge-value" id="current-val">91</span>
+        <span class="gauge-value" id="current-val">--</span>
         <span class="gauge-unit">AMPERES</span>
       </div>
       <span class="gauge-subtext">Max rated 100 A</span>
@@ -139,10 +131,10 @@
     <div class="soc-card">
       <div class="soc-card-header">
         <span class="soc-card-label">Battery SOC</span>
-        <span class="soc-pct" id="soc-val">67%</span>
+        <span class="soc-pct" id="soc-val">--%</span>
       </div>
       <div class="soc-bar-track">
-        <div class="soc-bar-fill" id="soc-bar" style="width:67%"></div>
+        <div class="soc-bar-fill" id="soc-bar" style="width:0%"></div>
       </div>
       <div class="soc-ticks">
         <span class="soc-tick">0%</span>
@@ -152,10 +144,10 @@
         <span class="soc-tick">100%</span>
       </div>
       <div class="charging-status" id="charging-status">
-        <div class="charging-icon charging-on">
+        <div class="charging-icon charging-off">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
         </div>
-        <span style="color:var(--accent);">Charging</span>
+        <span>Waiting…</span>
       </div>
     </div>
 
@@ -163,38 +155,73 @@
     <div class="temp-card">
       <span class="temp-card-label">Solar Temperature</span>
       <div class="temp-readings">
-
-        <!-- Ambient -->
+        <!-- Ambient (from weather API) -->
         <div class="temp-reading">
           <span class="temp-reading-label">Ambient</span>
           <div class="temp-vbar-track">
-            <!-- −4°C on scale −20→+60 → (−4+20)/80 = 20% -->
-            <div class="temp-vbar-fill temp-ambient-bar" style="height:20%"></div>
+            <div class="temp-vbar-fill temp-ambient-bar" id="ambient-temp-bar" style="height:0%"></div>
           </div>
-          <span class="temp-reading-value temp-ambient-val">−4°C</span>
+          <span class="temp-reading-value temp-ambient-val" id="ambient-temp-val">--°C</span>
         </div>
-
-        <!-- Panel -->
+        <!-- Panel (from Simulink) -->
         <div class="temp-reading">
           <span class="temp-reading-label">Panel</span>
           <div class="temp-vbar-track">
-            <!-- 42°C → (42+20)/80 = 77.5% -->
-            <div class="temp-vbar-fill temp-panel-bar" style="height:77.5%"></div>
+            <div class="temp-vbar-fill temp-panel-bar" id="panel-temp-bar" style="height:0%"></div>
           </div>
-          <span class="temp-reading-value temp-panel-val">42°C</span>
+          <span class="temp-reading-value temp-panel-val" id="panel-temp-val">--°C</span>
         </div>
-
-        <!-- Module -->
+        <!-- Module (from Simulink) -->
         <div class="temp-reading">
           <span class="temp-reading-label">Module</span>
           <div class="temp-vbar-track">
-            <!-- 48°C → (48+20)/80 = 85% -->
-            <div class="temp-vbar-fill temp-module-bar" style="height:85%"></div>
+            <div class="temp-vbar-fill temp-module-bar" id="module-temp-bar" style="height:0%"></div>
           </div>
-          <span class="temp-reading-value temp-module-val">48°C</span>
+          <span class="temp-reading-value temp-module-val" id="module-temp-val">--°C</span>
         </div>
-
       </div>
+    </div>
+
+    <!-- ═══ THRESHOLD CONTROLS ═══ -->
+    <div class="threshold-card">
+      <span class="threshold-card-label">Threshold Control</span>
+      <div class="threshold-grid">
+        <div class="thresh-group">
+          <span class="thresh-group-title">Voltage</span>
+          <div class="thresh-pair">
+            <label>High<input type="number" class="threshold-input" id="thresh-voltage_high" value="250"></label>
+            <label>Low<input type="number" class="threshold-input" id="thresh-voltage_low" value="190"></label>
+          </div>
+        </div>
+        <div class="thresh-group">
+          <span class="thresh-group-title">Battery %</span>
+          <div class="thresh-pair">
+            <label>Low<input type="number" class="threshold-input" id="thresh-soc_low" value="20"></label>
+          </div>
+        </div>
+        <div class="thresh-group">
+          <span class="thresh-group-title">Ambient Temp</span>
+          <div class="thresh-pair">
+            <label>High<input type="number" class="threshold-input" id="thresh-temp_ambient_high" value="45"></label>
+            <label>Low<input type="number" class="threshold-input" id="thresh-temp_ambient_low" value="-30"></label>
+          </div>
+        </div>
+        <div class="thresh-group">
+          <span class="thresh-group-title">Panel Temp</span>
+          <div class="thresh-pair">
+            <label>High<input type="number" class="threshold-input" id="thresh-temp_panel_high" value="75"></label>
+            <label>Low<input type="number" class="threshold-input" id="thresh-temp_panel_low" value="-20"></label>
+          </div>
+        </div>
+        <div class="thresh-group">
+          <span class="thresh-group-title">Module Temp</span>
+          <div class="thresh-pair">
+            <label>High<input type="number" class="threshold-input" id="thresh-temp_module_high" value="80"></label>
+            <label>Low<input type="number" class="threshold-input" id="thresh-temp_module_low" value="-20"></label>
+          </div>
+        </div>
+      </div>
+      <button class="thresh-save-btn" id="thresh-save-btn" onclick="saveThresholds()">Save Thresholds</button>
     </div>
 
   </div><!-- /solar-center -->
@@ -209,57 +236,8 @@
       <div class="alert-item alert-info">
         <div class="alert-dot dot-green"></div>
         <div class="alert-body">
-          <span class="alert-msg">Solar output nominal</span>
-          <span class="alert-time">09:42:10</span>
-        </div>
-      </div>
-      <div class="alert-item alert-info">
-        <div class="alert-dot dot-green"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Irradiance 850 W/m²</span>
-          <span class="alert-time">09:40:00</span>
-        </div>
-      </div>
-      <div class="alert-item alert-warn">
-        <div class="alert-dot dot-yellow"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Battery SOC below 70%</span>
-          <span class="alert-time">09:35:22</span>
-        </div>
-      </div>
-      <div class="alert-item alert-warn">
-        <div class="alert-dot dot-yellow"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Panel temp 42°C — within range</span>
-          <span class="alert-time">09:30:10</span>
-        </div>
-      </div>
-      <div class="alert-item alert-info">
-        <div class="alert-dot dot-green"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Voltage stable at 220 V</span>
-          <span class="alert-time">09:25:00</span>
-        </div>
-      </div>
-      <div class="alert-item alert-info">
-        <div class="alert-dot dot-green"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Array init — 50 kW rated</span>
-          <span class="alert-time">09:00:00</span>
-        </div>
-      </div>
-      <div class="alert-item alert-crit">
-        <div class="alert-dot dot-red"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Low irradiance warning</span>
-          <span class="alert-time">08:20:44</span>
-        </div>
-      </div>
-      <div class="alert-item alert-info">
-        <div class="alert-dot dot-green"></div>
-        <div class="alert-body">
-          <span class="alert-msg">System online</span>
-          <span class="alert-time">08:00:00</span>
+          <span class="alert-msg">Waiting for data…</span>
+          <span class="alert-time">--:--:--</span>
         </div>
       </div>
     </div>

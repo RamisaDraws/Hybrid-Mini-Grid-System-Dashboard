@@ -37,16 +37,13 @@
     </div>
     <div class="live-weather">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-      <span>-4°C</span>
+      <span id="weather-temp">--°C</span>
       <span class="weather-loc">Karazhar, KZ</span>
     </div>
   </div>
 
-  <!-- Hamburger — mobile only -->
   <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
-    <span></span>
-    <span></span>
-    <span></span>
+    <span></span><span></span><span></span>
   </button>
 </header>
 
@@ -69,13 +66,8 @@
       Community Map
     </div>
     <div class="map-embed-wrap" id="map-embed-wrap">
-      <iframe
-        id="map-iframe"
-        class="map-iframe"
-        src="village_map.html"
-        title="Karazhar Village Map"
-        scrolling="no"
-      ></iframe>
+      <iframe id="map-iframe" class="map-iframe" src="village_map.html"
+        title="Karazhar Village Map" scrolling="no"></iframe>
     </div>
   </section>
 
@@ -95,15 +87,15 @@
         <div class="stat-grid">
           <div class="stat-item">
             <span class="stat-label">Voltage</span>
-            <span class="stat-value solar-val">220 <span class="stat-unit">V</span></span>
+            <span class="stat-value solar-val">-- <span class="stat-unit">V</span></span>
           </div>
           <div class="stat-item">
             <span class="stat-label">Current</span>
-            <span class="stat-value solar-val">91 <span class="stat-unit">A</span></span>
+            <span class="stat-value solar-val">-- <span class="stat-unit">A</span></span>
           </div>
           <div class="stat-item">
             <span class="stat-label">Power</span>
-            <span class="stat-value solar-val">20.0 <span class="stat-unit">kW</span></span>
+            <span class="stat-value solar-val">-- <span class="stat-unit">kW</span></span>
           </div>
         </div>
         <a href="solar.html" class="btn-source solar-btn">View Solar →</a>
@@ -111,11 +103,9 @@
       <div class="source-card source-graph">
         <div class="graph-header">
           <span class="graph-title">Solar — Generated Energy</span>
-          <span class="graph-unit">kWh</span>
+          <span class="graph-unit">kW</span>
         </div>
-        <div class="chart-wrap">
-          <canvas id="chart-solar"></canvas>
-        </div>
+        <div class="chart-wrap"><canvas id="chart-solar"></canvas></div>
       </div>
     </div>
 
@@ -132,15 +122,15 @@
         <div class="stat-grid">
           <div class="stat-item">
             <span class="stat-label">Voltage</span>
-            <span class="stat-value hydro-val">220 <span class="stat-unit">V</span></span>
+            <span class="stat-value hydro-val">-- <span class="stat-unit">V</span></span>
           </div>
           <div class="stat-item">
             <span class="stat-label">Current</span>
-            <span class="stat-value hydro-val">1136 <span class="stat-unit">A</span></span>
+            <span class="stat-value hydro-val">-- <span class="stat-unit">A</span></span>
           </div>
           <div class="stat-item">
             <span class="stat-label">Power</span>
-            <span class="stat-value hydro-val">250 <span class="stat-unit">kW</span></span>
+            <span class="stat-value hydro-val">-- <span class="stat-unit">kW</span></span>
           </div>
         </div>
         <a href="hydro.html" class="btn-source hydro-btn">View Hydro →</a>
@@ -148,11 +138,9 @@
       <div class="source-card source-graph">
         <div class="graph-header">
           <span class="graph-title">Hydro — Generated Energy</span>
-          <span class="graph-unit">kWh</span>
+          <span class="graph-unit">kW</span>
         </div>
-        <div class="chart-wrap">
-          <canvas id="chart-hydro"></canvas>
-        </div>
+        <div class="chart-wrap"><canvas id="chart-hydro"></canvas></div>
       </div>
     </div>
 
@@ -185,11 +173,9 @@
       <div class="source-card source-graph">
         <div class="graph-header">
           <span class="graph-title">Generator — Generated Energy</span>
-          <span class="graph-unit">kWh</span>
+          <span class="graph-unit">kW</span>
         </div>
-        <div class="chart-wrap">
-          <canvas id="chart-gen"></canvas>
-        </div>
+        <div class="chart-wrap"><canvas id="chart-gen"></canvas></div>
       </div>
     </div>
 
@@ -205,50 +191,8 @@
       <div class="alert-item alert-info">
         <div class="alert-dot dot-green"></div>
         <div class="alert-body">
-          <span class="alert-msg">Solar output nominal</span>
-          <span class="alert-time">09:42:10</span>
-        </div>
-      </div>
-      <div class="alert-item alert-info">
-        <div class="alert-dot dot-green"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Hydro flow stable at 0.58 m³/s</span>
-          <span class="alert-time">09:40:05</span>
-        </div>
-      </div>
-      <div class="alert-item alert-warn">
-        <div class="alert-dot dot-yellow"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Battery SOC below 40%</span>
-          <span class="alert-time">09:35:22</span>
-        </div>
-      </div>
-      <div class="alert-item alert-info">
-        <div class="alert-dot dot-green"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Generator on standby</span>
-          <span class="alert-time">09:30:00</span>
-        </div>
-      </div>
-      <div class="alert-item alert-info">
-        <div class="alert-dot dot-green"></div>
-        <div class="alert-body">
-          <span class="alert-msg">System initialised</span>
-          <span class="alert-time">09:00:00</span>
-        </div>
-      </div>
-      <div class="alert-item alert-crit">
-        <div class="alert-dot dot-red"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Grid outage detected</span>
-          <span class="alert-time">08:54:33</span>
-        </div>
-      </div>
-      <div class="alert-item alert-info">
-        <div class="alert-dot dot-green"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Hydro turbine started</span>
-          <span class="alert-time">08:50:11</span>
+          <span class="alert-msg">Waiting for data…</span>
+          <span class="alert-time">--:--:--</span>
         </div>
       </div>
     </div>
@@ -273,33 +217,22 @@
     link.addEventListener('click', () => mobileNav.classList.remove('open'))
   );
 
-  /* ── iframe auto-height ────────────────────────────────────────
-     village_map.html posts { type:'mapHeight', height:N } to parent.
-     We apply that height to both the iframe and its wrapper with
-     NO maximum — the full map always shows, no internal scrollbar.
-  ──────────────────────────────────────────────────────────────── */
+  /* ── iframe auto-height ── */
   const mapIframe = document.getElementById('map-iframe');
   const mapWrap   = document.getElementById('map-embed-wrap');
-
   function applyMapHeight(h) {
     if (!h || h < 100) return;
     mapIframe.style.height = h + 'px';
     mapWrap.style.height   = h + 'px';
   }
-
-  /* Primary: postMessage from village_map.html */
   window.addEventListener('message', (e) => {
-    if (e.data && e.data.type === 'mapHeight') {
-      applyMapHeight(e.data.height);
-    }
+    if (e.data && e.data.type === 'mapHeight') applyMapHeight(e.data.height);
   });
-
-  /* Fallback: read contentDocument directly (same-origin) */
   mapIframe.addEventListener('load', () => {
     try {
       const doc = mapIframe.contentDocument || mapIframe.contentWindow.document;
       applyMapHeight(doc.documentElement.scrollHeight);
-    } catch (err) { /* cross-origin — postMessage will handle */ }
+    } catch (err) {}
   });
 </script>
 </body>

@@ -674,3 +674,144 @@ body {
     text-align: center;
   }
 }
+
+/* ══════════════════════════════════════
+   THRESHOLD CONTROL CARDS (shared)
+══════════════════════════════════════ */
+.threshold-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  grid-column: 1 / -1;
+  animation: fadeUp 0.4s ease 0.3s both;
+}
+
+.threshold-card-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.threshold-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.thresh-group {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.65rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.thresh-group-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.thresh-pair {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.thresh-pair label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.58rem;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.threshold-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.45rem;
+  outline: none;
+  transition: border-color 0.2s;
+  -moz-appearance: textfield;
+}
+
+.threshold-input::-webkit-inner-spin-button,
+.threshold-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.threshold-input:focus {
+  border-color: var(--accent);
+}
+
+.thresh-save-btn {
+  align-self: flex-end;
+  padding: 0.5rem 1.2rem;
+  border-radius: 7px;
+  border: 1px solid rgba(0, 229, 160, 0.3);
+  background: rgba(0, 229, 160, 0.1);
+  color: var(--accent);
+  font-family: 'Syne', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.thresh-save-btn:hover {
+  background: rgba(0, 229, 160, 0.2);
+  border-color: rgba(0, 229, 160, 0.5);
+}
+
+/* Threshold responsive — small screens */
+@media (max-width: 700px) {
+  .threshold-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .thresh-group {
+    padding: 0.5rem 0.45rem;
+  }
+
+  .thresh-group-title {
+    font-size: 0.5rem;
+  }
+
+  .threshold-input {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.35rem;
+  }
+
+  .thresh-save-btn {
+    align-self: stretch;
+    text-align: center;
+  }
+}
+
+@media (max-width: 380px) {
+  .threshold-grid {
+    grid-template-columns: 1fr;
+  }
+}

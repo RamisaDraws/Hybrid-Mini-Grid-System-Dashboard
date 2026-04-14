@@ -22,7 +22,6 @@
       </a>
     </div>
   </div>
-
   <nav class="topbar-nav">
     <a href="index.html" class="nav-link">Overview</a>
     <a href="solar.html" class="nav-link solar-link">Solar</a>
@@ -30,7 +29,6 @@
     <a href="generator.html" class="nav-link gen-link">Generator</a>
     <a href="#" class="nav-link">Login</a>
   </nav>
-
   <div class="topbar-right">
     <div class="live-info">
       <div class="live-time" id="live-time">--:--:--</div>
@@ -38,17 +36,13 @@
     </div>
     <div class="live-weather">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-      <span>-4°C</span>
+      <span id="weather-temp">--°C</span>
       <span class="weather-loc">Karazhar, KZ</span>
     </div>
   </div>
-
-  <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
-    <span></span><span></span><span></span>
-  </button>
+  <button class="hamburger" id="hamburger-btn" aria-label="Open menu"><span></span><span></span><span></span></button>
 </header>
 
-<!-- ── MOBILE NAV DRAWER ── -->
 <nav class="mobile-nav" id="mobile-nav">
   <a href="index.html" class="nav-link">Overview</a>
   <a href="solar.html" class="nav-link solar-link">Solar</a>
@@ -60,27 +54,19 @@
 <!-- ── MAIN ── -->
 <main class="hydro-main">
 
-  <!-- ════ LEFT COLUMN ════ -->
+  <!-- ════ LEFT ════ -->
   <div class="hydro-left">
-
-    <!-- Hydro image placeholder -->
     <div class="hydro-image-card">
       <div class="hydro-image-inner">
         <div class="hydro-image-placeholder">
-          <!-- Animated pipe cross-section SVG -->
           <svg class="pipe-icon" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Outer pipe ring -->
             <circle cx="32" cy="32" r="30" stroke="#3ecfcf" stroke-width="2" stroke-dasharray="6 3" opacity="0.35"/>
-            <!-- Pipe wall -->
             <circle cx="32" cy="32" r="26" stroke="#3ecfcf" stroke-width="3" opacity="0.5"/>
-            <!-- Inner bore -->
             <circle cx="32" cy="32" r="18" stroke="#3ecfcf" stroke-width="1.5" stroke-dasharray="4 2" opacity="0.3"/>
-            <!-- Turbine blades -->
             <path d="M32 14 L36 28 L32 32 L28 28 Z" fill="#3ecfcf" opacity="0.6"/>
             <path d="M50 32 L36 36 L32 32 L36 28 Z" fill="#3ecfcf" opacity="0.6"/>
             <path d="M32 50 L28 36 L32 32 L36 36 Z" fill="#3ecfcf" opacity="0.6"/>
             <path d="M14 32 L28 28 L32 32 L28 36 Z" fill="#3ecfcf" opacity="0.6"/>
-            <!-- Centre hub -->
             <circle cx="32" cy="32" r="4" fill="#3ecfcf" opacity="0.9"/>
           </svg>
           <span>IMAGE PLACEHOLDER</span>
@@ -96,48 +82,33 @@
       </div>
     </div>
 
-    <!-- Dual-line chart: power output vs load -->
     <div class="hydro-chart-card">
       <div class="hydro-chart-header">
         <span class="hydro-chart-title">Power Output vs Load Demand</span>
         <div class="hydro-chart-legend">
-          <div class="legend-line">
-            <span style="background:#3ecfcf;"></span>
-            Power Out
-          </div>
-          <div class="legend-line">
-            <span style="background:#ff6b6b; opacity:0.8;"></span>
-            Load
-          </div>
+          <div class="legend-line"><span style="background:#3ecfcf;"></span>Power Out</div>
+          <div class="legend-line"><span style="background:#ff6b6b; opacity:0.8;"></span>Load</div>
         </div>
       </div>
-      <div class="hydro-chart-wrap">
-        <canvas id="chart-hydro-dual"></canvas>
-      </div>
+      <div class="hydro-chart-wrap"><canvas id="chart-hydro-dual"></canvas></div>
     </div>
+  </div>
 
-  </div><!-- /hydro-left -->
-
-  <!-- ════ CENTER GRID ════ -->
+  <!-- ════ CENTER ════ -->
   <div class="hydro-center">
-
-    <!-- Row 1: Water flow rate line graph — full width -->
     <div class="flow-chart-card">
       <div class="flow-chart-header">
         <span class="flow-chart-title">Water Flow Rate</span>
         <span class="flow-chart-unit">m³/s</span>
       </div>
-      <div class="flow-chart-wrap">
-        <canvas id="chart-flow-rate"></canvas>
-      </div>
+      <div class="flow-chart-wrap"><canvas id="chart-flow-rate"></canvas></div>
     </div>
 
-    <!-- Row 2: Pressure gauge + Pump state -->
     <div class="pressure-gauge-card">
       <span class="gauge-card-label">Water Pressure</span>
       <canvas id="gauge-pressure" class="gauge-canvas" width="200" height="114"></canvas>
       <div class="gauge-value-block">
-        <span class="gauge-value hydro-gauge-val" id="pressure-val">52</span>
+        <span class="gauge-value hydro-gauge-val" id="pressure-val">--</span>
         <span class="gauge-unit">METRES HEAD</span>
       </div>
       <span class="gauge-subtext">Range 26–60 m</span>
@@ -146,39 +117,29 @@
     <div class="pump-state-card">
       <span class="pump-state-label">Water Pump State</span>
       <div class="pump-indicator" id="pump-indicator">
-        <div class="pump-icon-wrap pump-on">
+        <div class="pump-icon-wrap pump-off">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M12 2C6 2 2 7 2 12c0 5.52 4.48 10 10 10s10-4.48 10-10C22 7 18 2 12 2z"/>
             <path d="M12 8v4l3 3"/>
           </svg>
         </div>
         <div class="pump-status-text">
-          <span class="pump-state-value" id="pump-state-val">RUNNING</span>
-          <span class="pump-state-sub">Turbine active · 0.58 m³/s</span>
+          <span class="pump-state-value" id="pump-state-val">--</span>
+          <span class="pump-state-sub">Waiting for data…</span>
         </div>
       </div>
       <div class="pump-meta">
-        <div class="pump-meta-item">
-          <span class="pump-meta-label">Pipeline Ø</span>
-          <span class="pump-meta-val">700 mm</span>
-        </div>
-        <div class="pump-meta-item">
-          <span class="pump-meta-label">Hydraulic Head</span>
-          <span class="pump-meta-val">55 m</span>
-        </div>
-        <div class="pump-meta-item">
-          <span class="pump-meta-label">Efficiency</span>
-          <span class="pump-meta-val">~85%</span>
-        </div>
+        <div class="pump-meta-item"><span class="pump-meta-label">Pipeline Ø</span><span class="pump-meta-val">700 mm</span></div>
+        <div class="pump-meta-item"><span class="pump-meta-label">Hydraulic Head</span><span class="pump-meta-val">55 m</span></div>
+        <div class="pump-meta-item"><span class="pump-meta-label">Efficiency</span><span class="pump-meta-val">~85%</span></div>
       </div>
     </div>
 
-    <!-- Row 3: Voltage gauge + Current gauge -->
     <div class="gauge-card">
       <span class="gauge-card-label">Voltage</span>
       <canvas id="gauge-voltage" class="gauge-canvas" width="200" height="114"></canvas>
       <div class="gauge-value-block">
-        <span class="gauge-value hydro-gauge-val" id="voltage-val">220</span>
+        <span class="gauge-value hydro-gauge-val" id="voltage-val">--</span>
         <span class="gauge-unit">VOLTS (AC)</span>
       </div>
       <span class="gauge-subtext">Nominal 220 V</span>
@@ -188,13 +149,35 @@
       <span class="gauge-card-label">Current</span>
       <canvas id="gauge-current" class="gauge-canvas" width="200" height="114"></canvas>
       <div class="gauge-value-block">
-        <span class="gauge-value hydro-gauge-val" id="current-val">1136</span>
+        <span class="gauge-value hydro-gauge-val" id="current-val">--</span>
         <span class="gauge-unit">AMPERES</span>
       </div>
       <span class="gauge-subtext">Rated output load</span>
     </div>
 
-  </div><!-- /hydro-center -->
+    <!-- ═══ THRESHOLD CONTROLS ═══ -->
+    <div class="threshold-card" style="grid-column: 1 / -1;">
+      <span class="threshold-card-label">Threshold Control</span>
+      <div class="threshold-grid">
+        <div class="thresh-group">
+          <span class="thresh-group-title">Water Pressure</span>
+          <div class="thresh-pair">
+            <label>High<input type="number" class="threshold-input" id="thresh-pressure_high" value="60"></label>
+            <label>Low<input type="number" class="threshold-input" id="thresh-pressure_low" value="30"></label>
+          </div>
+        </div>
+        <div class="thresh-group">
+          <span class="thresh-group-title">Voltage</span>
+          <div class="thresh-pair">
+            <label>High<input type="number" class="threshold-input" id="thresh-voltage_high" value="250"></label>
+            <label>Low<input type="number" class="threshold-input" id="thresh-voltage_low" value="190"></label>
+          </div>
+        </div>
+      </div>
+      <button class="thresh-save-btn" id="thresh-save-btn" onclick="saveThresholds()">Save Thresholds</button>
+    </div>
+
+  </div>
 
   <!-- ════ RIGHT: ALERTS ════ -->
   <aside class="panel-alerts hydro-alerts">
@@ -206,57 +189,8 @@
       <div class="alert-item alert-info">
         <div class="alert-dot dot-green"></div>
         <div class="alert-body">
-          <span class="alert-msg">Hydro output nominal</span>
-          <span class="alert-time">09:42:10</span>
-        </div>
-      </div>
-      <div class="alert-item alert-info">
-        <div class="alert-dot dot-green"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Flow stable at 0.58 m³/s</span>
-          <span class="alert-time">09:40:05</span>
-        </div>
-      </div>
-      <div class="alert-item alert-info">
-        <div class="alert-dot dot-green"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Pressure 52 m — within range</span>
-          <span class="alert-time">09:38:00</span>
-        </div>
-      </div>
-      <div class="alert-item alert-warn">
-        <div class="alert-dot dot-yellow"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Pressure fluctuation detected</span>
-          <span class="alert-time">09:30:44</span>
-        </div>
-      </div>
-      <div class="alert-item alert-info">
-        <div class="alert-dot dot-green"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Voltage stable at 220 V</span>
-          <span class="alert-time">09:25:00</span>
-        </div>
-      </div>
-      <div class="alert-item alert-info">
-        <div class="alert-dot dot-green"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Turbine started — 250 kW</span>
-          <span class="alert-time">09:00:00</span>
-        </div>
-      </div>
-      <div class="alert-item alert-warn">
-        <div class="alert-dot dot-yellow"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Low flow transient — 0.51 m³/s</span>
-          <span class="alert-time">08:45:12</span>
-        </div>
-      </div>
-      <div class="alert-item alert-info">
-        <div class="alert-dot dot-green"></div>
-        <div class="alert-body">
-          <span class="alert-msg">System online</span>
-          <span class="alert-time">08:00:00</span>
+          <span class="alert-msg">Waiting for data…</span>
+          <span class="alert-time">--:--:--</span>
         </div>
       </div>
     </div>
@@ -264,7 +198,6 @@
 
 </main>
 
-<!-- ── FOOTER ── -->
 <footer class="site-footer">
   <span>ENG30002 · Mini-Grid Project · Karazhar, Akmola Region, Kazakhstan</span>
   <span>Swinburne University of Technology Sarawak</span>
