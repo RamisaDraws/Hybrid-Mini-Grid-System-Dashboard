@@ -3,6 +3,16 @@
    Karazhar Minigrid — Solar PV Page (Live)
    ════════════════════════════════════════════════ */
 
+/* ── Auth ── */
+function handleAuthError(res) {
+  if (res.status === 401) { window.location.href = '/login.html'; return true; }
+  return false;
+}
+async function doLogout() {
+  try { await fetch('/api/logout', { method: 'POST' }); } catch (e) {}
+  window.location.href = '/login.html';
+}
+
 /* ── Live clock (Karazhar = Asia/Almaty) ── */
 (function () {
   const pad = n => String(n).padStart(2, '0');
@@ -39,10 +49,8 @@ async function fetchWeather() {
     ambientTemp = Math.round(data.current_weather.temperature);
     const el = document.getElementById('weather-temp');
     if (el) el.textContent = `${ambientTemp}°C`;
-    // Update ambient temp display
     const ambEl = document.getElementById('ambient-temp-val');
     if (ambEl) ambEl.textContent = `${ambientTemp}°C`;
-    // Update ambient bar
     const ambBar = document.getElementById('ambient-temp-bar');
     if (ambBar) {
       const pct = Math.max(0, Math.min(100, ((ambientTemp + 30) / 80) * 100));
@@ -77,13 +85,7 @@ const CHART_OPTS = {
   }
 };
 
-function genTimeLabels() {
-  const now = new Date();
-  return Array.from({ length: 16 }, (_, i) => {
-    const t = new Date(now - (15 - i) * 15 * 60 * 1000);
-    return `${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
-  });
-}
+const chartLabels = Array.from({ length: 16 }, () => '--:--');
 
 /* ── Gauge renderer ── */
 function drawGauge(el, value, max, color) {
@@ -121,6 +123,12 @@ function renderAlerts(alerts) {
   const el = document.querySelector('.solar-alerts .alerts-list');
   if (!el) return;
   el.innerHTML = '';
+  if (!alerts || alerts.length === 0) {
+    el.innerHTML = `<div class="alert-item alert-info"><div class="alert-dot dot-green"></div>
+      <div class="alert-body"><span class="alert-msg">No alerts</span>
+      <span class="alert-time">—</span></div></div>`;
+    return;
+  }
   alerts.slice().reverse().forEach(a => {
     const lc = a.level === 'warn' ? 'alert-warn' : a.level === 'crit' ? 'alert-crit' : 'alert-info';
     const dc = a.level === 'warn' ? 'dot-yellow' : a.level === 'crit' ? 'dot-red' : 'dot-green';
@@ -128,6 +136,65 @@ function renderAlerts(alerts) {
       <div class="alert-body"><span class="alert-msg">${a.msg}</span>
       <span class="alert-time">${a.time}</span></div></div>`;
   });
+}
+
+/* ── Alert date dropdown ── */
+async function loadAlertDates() {
+  try {
+    const res = await fetch('/api/alerts/dates');
+    if (handleAuthError(res)) return;
+    const data = await res.json();
+    const sel = document.getElementById('alert-date-select');
+    if (!sel) return;
+    sel.innerHTML = '';
+    const today = new Date().toISOString().slice(0, 10);
+    const todayOpt = document.createElement('option');
+    todayOpt.value = today; todayOpt.textContent = 'Today';
+    sel.appendChild(todayOpt);
+    (data.dates || []).forEach(d => {
+      if (d === today) return;
+      const opt = document.createElement('option');
+      opt.value = d;
+      const parts = d.split('-');
+      opt.textContent = `${parts[2]}/${parts[1]}/${parts[0].slice(2)}`;
+      sel.appendChild(opt);
+    });
+  } catch (e) {}
+}
+
+async function onAlertDateChange() {
+  const sel = document.getElementById('alert-date-select');
+  if (!sel) return;
+  try {
+    const res = await fetch(`/api/alerts/${sel.value}?source=solar`);
+    if (handleAuthError(res)) return;
+    const data = await res.json();
+    renderAlerts(data.alerts || []);
+  } catch (e) {}
+}
+
+/* ── Load chart history from server ── */
+async function loadChartHistory() {
+  try {
+    const res = await fetch('/api/chart_history');
+    if (handleAuthError(res)) return;
+    const h = await res.json();
+    if (h.solar_power && h.solar_power.length > 0) {
+      const pad = (arr, n) => { const a = arr.slice(-n); while (a.length < n) a.unshift(0); return a; };
+      const sp = pad(h.solar_power, 16);
+      const sl = pad(h.solar_load, 16);
+      const ts = pad(h.timestamps, 16);
+      for (let i = 0; i < 16; i++) {
+        powerData[i] = sp[i];
+        loadData[i] = sl[i];
+        if (ts[i]) chartLabels[i] = ts[i];
+      }
+      if (solarChart) {
+        solarChart.data.labels = chartLabels;
+        solarChart.update('none');
+      }
+    }
+  } catch (e) { console.warn('Chart history load failed'); }
 }
 
 /* ── Init ── */
@@ -143,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
     solarChart = new Chart(c, {
       type: 'line',
       data: {
-        labels: genTimeLabels(),
+        labels: chartLabels,
         datasets: [
           { label: 'Power Out (kW)', data: powerData, borderColor: '#f5c842', borderWidth: 2,
             backgroundColor: gP, fill: true, tension: 0.45, pointRadius: 0,
@@ -162,8 +229,9 @@ document.addEventListener('DOMContentLoaded', () => {
   drawGauge(document.getElementById('gauge-voltage'), 0, 260, '#f5c842');
   drawGauge(document.getElementById('gauge-current'), 0, 100, '#f5c842');
 
-  // Load thresholds
+  loadChartHistory();
   loadThresholds();
+  loadAlertDates();
 });
 
 /* ── Poll Flask every 2s ── */
@@ -171,22 +239,20 @@ let pollCount = 0;
 setInterval(async () => {
   try {
     const res = await fetch('/api/solar');
+    if (handleAuthError(res)) return;
     const d = await res.json();
 
-    // Gauges
     drawGauge(document.getElementById('gauge-voltage'), d.voltage, 260, '#f5c842');
     drawGauge(document.getElementById('gauge-current'), d.current, 100, '#f5c842');
-
-    // Gauge value labels
     const vEl = document.getElementById('voltage-val');
     const cEl = document.getElementById('current-val');
-    if (vEl) vEl.textContent = d.voltage;
-    if (cEl) cEl.textContent = d.current;
+    if (vEl) vEl.textContent = Number(d.voltage).toFixed(1);
+    if (cEl) cEl.textContent = Number(d.current).toFixed(1);
 
     // SOC
     const socEl = document.getElementById('soc-val');
     const socBar = document.getElementById('soc-bar');
-    if (socEl) socEl.textContent = d.soc + '%';
+    if (socEl) socEl.textContent = Number(d.soc).toFixed(1) + '%';
     if (socBar) socBar.style.width = d.soc + '%';
 
     // Charging
@@ -195,24 +261,16 @@ setInterval(async () => {
     if (chargeIcon) chargeIcon.className = 'charging-icon ' + (d.charging ? 'charging-on' : 'charging-off');
     if (chargeText) chargeText.textContent = d.charging ? 'Charging' : 'Not Charging';
 
-    // Temperatures (panel + module from Simulink)
+    // Temps
     const panelEl = document.getElementById('panel-temp-val');
     const moduleEl = document.getElementById('module-temp-val');
-    if (panelEl) panelEl.textContent = d.temp_panel + '°C';
-    if (moduleEl) moduleEl.textContent = d.temp_module + '°C';
+    if (panelEl) panelEl.textContent = Number(d.temp_panel).toFixed(1) + '°C';
+    if (moduleEl) moduleEl.textContent = Number(d.temp_module).toFixed(1) + '°C';
 
-    // Panel temp bar
     const panelBar = document.getElementById('panel-temp-bar');
-    if (panelBar) {
-      const pct = Math.max(0, Math.min(100, ((d.temp_panel + 20) / 100) * 100));
-      panelBar.style.height = pct + '%';
-    }
-    // Module temp bar
+    if (panelBar) panelBar.style.height = Math.max(0, Math.min(100, ((d.temp_panel + 20) / 100) * 100)) + '%';
     const moduleBar = document.getElementById('module-temp-bar');
-    if (moduleBar) {
-      const pct = Math.max(0, Math.min(100, ((d.temp_module + 20) / 100) * 100));
-      moduleBar.style.height = pct + '%';
-    }
+    if (moduleBar) moduleBar.style.height = Math.max(0, Math.min(100, ((d.temp_module + 20) / 100) * 100)) + '%';
 
     // Rolling chart
     pollCount++;
@@ -222,8 +280,12 @@ setInterval(async () => {
       if (solarChart) solarChart.update('none');
     }
 
-    // Alerts
-    renderAlerts(d.alerts || []);
+    // Alerts — only update if dropdown shows today
+    const sel = document.getElementById('alert-date-select');
+    const today = new Date().toISOString().slice(0, 10);
+    if (!sel || sel.value === today) {
+      renderAlerts(d.alerts || []);
+    }
   } catch (e) {
     console.warn('Bridge not connected:', e.message);
   }
@@ -233,6 +295,7 @@ setInterval(async () => {
 async function loadThresholds() {
   try {
     const res = await fetch('/api/thresholds/solar');
+    if (handleAuthError(res)) return;
     const t = await res.json();
     Object.keys(t).forEach(k => {
       const el = document.getElementById('thresh-' + k);
@@ -248,10 +311,11 @@ async function saveThresholds() {
     payload[key] = parseFloat(el.value) || 0;
   });
   try {
-    await fetch('/api/thresholds/solar', {
+    const res = await fetch('/api/thresholds/solar', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+    if (handleAuthError(res)) return;
     const btn = document.getElementById('thresh-save-btn');
     if (btn) { btn.textContent = 'Saved ✓'; setTimeout(() => btn.textContent = 'Save Thresholds', 1500); }
   } catch (e) { console.warn('Threshold save failed'); }

@@ -16,7 +16,7 @@
     <div class="site-title">
       <span class="title-main">Minigrid System Monitor</span>
       <span class="title-sep">/</span>
-      <a href="village_map.html" class="title-location">
+      <a href="https://maps.google.com/?cid=12894065327944216015" target="_blank" rel="noopener" class="title-location">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         Karazhar
       </a>
@@ -28,7 +28,7 @@
     <a href="solar.html" class="nav-link solar-link active">Solar</a>
     <a href="hydro.html" class="nav-link hydro-link">Hydro</a>
     <a href="generator.html" class="nav-link gen-link">Generator</a>
-    <a href="#" class="nav-link">Login</a>
+    <a href="#" class="nav-link" onclick="doLogout(); return false;">Logout</a>
   </nav>
 
   <div class="topbar-right">
@@ -54,7 +54,7 @@
   <a href="solar.html" class="nav-link solar-link active">Solar</a>
   <a href="hydro.html" class="nav-link hydro-link">Hydro</a>
   <a href="generator.html" class="nav-link gen-link">Generator</a>
-  <a href="#" class="nav-link">Login</a>
+  <a href="#" class="nav-link" onclick="doLogout(); return false;">Logout</a>
 </nav>
 
 <!-- ── MAIN ── -->
@@ -66,7 +66,7 @@
     <!-- Solar photo -->
     <div class="solar-image-card">
       <div class="solar-image-inner">
-        <img src="images/14.jpg" alt="Rooftop Solar PV Array — Karazhar"
+        <img src="images/solar.png" alt="Rooftop Solar PV Array — Karazhar"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
         <div class="solar-image-placeholder">
           <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -111,7 +111,7 @@
       <canvas id="gauge-voltage" class="gauge-canvas" width="200" height="114"></canvas>
       <div class="gauge-value-block">
         <span class="gauge-value" id="voltage-val">--</span>
-        <span class="gauge-unit">VOLTS (AC)</span>
+        <span class="gauge-unit">V</span>
       </div>
       <span class="gauge-subtext">Nominal 220 V</span>
     </div>
@@ -122,7 +122,7 @@
       <canvas id="gauge-current" class="gauge-canvas" width="200" height="114"></canvas>
       <div class="gauge-value-block">
         <span class="gauge-value" id="current-val">--</span>
-        <span class="gauge-unit">AMPERES</span>
+        <span class="gauge-unit">A</span>
       </div>
       <span class="gauge-subtext">Max rated 100 A</span>
     </div>
@@ -231,6 +231,9 @@
     <div class="panel-label">
       <span class="dot dot-yellow blink"></span>
       Solar Alerts
+    </div>
+    <div class="alert-date-picker">
+      <select id="alert-date-select" onchange="onAlertDateChange()"></select>
     </div>
     <div class="alerts-list">
       <div class="alert-item alert-info">

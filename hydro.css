@@ -275,9 +275,9 @@
 
 .gauge-value-block {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.35rem;
   margin-top: -6px;
 }
 
@@ -291,9 +291,9 @@
 
 .gauge-unit {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: var(--text-dim);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.04em;
 }
 
 .gauge-subtext {

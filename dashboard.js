@@ -4,6 +4,18 @@
    Live data from Flask + Weather API
    ════════════════════════════════════════════════ */
 
+/* ── Auth guard ── */
+function handleAuthError(res) {
+  if (res.status === 401) { window.location.href = '/login.html'; return true; }
+  return false;
+}
+
+/* ── Logout ── */
+async function doLogout() {
+  try { await fetch('/api/logout', { method: 'POST' }); } catch (e) {}
+  window.location.href = '/login.html';
+}
+
 /* ── Live clock (Karazhar local = UTC+5 Astana) ── */
 function updateClock() {
   const now = new Date();
@@ -34,7 +46,7 @@ async function fetchWeather() {
   }
 }
 fetchWeather();
-setInterval(fetchWeather, 600000); // refresh every 10 min
+setInterval(fetchWeather, 600000);
 
 /* ── Chart defaults ── */
 const CHART_DEFAULTS = {
@@ -127,6 +139,15 @@ function renderAlerts(containerSelector, alerts) {
   const el = document.querySelector(containerSelector);
   if (!el) return;
   el.innerHTML = '';
+  if (!alerts || alerts.length === 0) {
+    el.innerHTML = `<div class="alert-item alert-info">
+      <div class="alert-dot dot-green"></div>
+      <div class="alert-body">
+        <span class="alert-msg">No alerts</span>
+        <span class="alert-time">—</span>
+      </div></div>`;
+    return;
+  }
   alerts.slice().reverse().forEach(a => {
     const levelClass = a.level === 'warn' ? 'alert-warn' : a.level === 'crit' ? 'alert-crit' : 'alert-info';
     const dotClass = a.level === 'warn' ? 'dot-yellow' : a.level === 'crit' ? 'dot-red' : 'dot-green';
@@ -141,11 +162,89 @@ function renderAlerts(containerSelector, alerts) {
   });
 }
 
+/* ── Alert date dropdown ── */
+let currentAlertDate = 'today';
+
+async function loadAlertDates() {
+  try {
+    const res = await fetch('/api/alerts/dates');
+    if (handleAuthError(res)) return;
+    const data = await res.json();
+    const sel = document.getElementById('alert-date-select');
+    if (!sel) return;
+    sel.innerHTML = '';
+    // "Today" option
+    const today = new Date().toISOString().slice(0, 10);
+    const todayOpt = document.createElement('option');
+    todayOpt.value = today;
+    todayOpt.textContent = 'Today';
+    sel.appendChild(todayOpt);
+    // Other dates
+    (data.dates || []).forEach(d => {
+      if (d === today) return; // skip today (already added)
+      const opt = document.createElement('option');
+      opt.value = d;
+      // Format as DD/MM/YY
+      const parts = d.split('-');
+      opt.textContent = `${parts[2]}/${parts[1]}/${parts[0].slice(2)}`;
+      sel.appendChild(opt);
+    });
+  } catch (e) {}
+}
+
+async function onAlertDateChange() {
+  const sel = document.getElementById('alert-date-select');
+  if (!sel) return;
+  const dateStr = sel.value;
+  try {
+    const res = await fetch(`/api/alerts/${dateStr}`);
+    if (handleAuthError(res)) return;
+    const data = await res.json();
+    renderAlerts('.panel-alerts .alerts-list', data.alerts || []);
+  } catch (e) {}
+}
+
+/* ── Load chart history from server (for tab-switch persistence) ── */
+async function loadChartHistory() {
+  try {
+    const res = await fetch('/api/chart_history');
+    if (handleAuthError(res)) return;
+    const h = await res.json();
+    if (h.overview_solar && h.overview_solar.length > 0) {
+      // Pad arrays to 12 points
+      const pad = (arr, n) => {
+        const a = arr.slice(-n);
+        while (a.length < n) a.unshift(0);
+        return a;
+      };
+      const s = pad(h.overview_solar, 12);
+      const hy = pad(h.overview_hydro, 12);
+      const g = pad(h.overview_gen, 12);
+      const ts = pad(h.timestamps, 12);
+      for (let i = 0; i < 12; i++) {
+        solarData[i] = s[i];
+        hydroData[i] = hy[i];
+        genData[i] = g[i];
+        if (ts[i]) labels[i] = ts[i];
+      }
+      if (chartSolar) chartSolar.update('none');
+      if (chartHydro) chartHydro.update('none');
+      if (chartGen) chartGen.update('none');
+    }
+  } catch (e) { console.warn('Chart history load failed'); }
+}
+
 /* ── Init charts ── */
 document.addEventListener('DOMContentLoaded', () => {
   chartSolar = buildChart('chart-solar', solarData, '#f5c842', '#f5c842');
   chartHydro = buildChart('chart-hydro', hydroData, '#3ecfcf', '#3ecfcf');
   chartGen   = buildChart('chart-gen',   genData,   '#ff6b6b', '#ff6b6b');
+
+  // Load chart history from server
+  loadChartHistory();
+
+  // Load alert date dropdown
+  loadAlertDates();
 });
 
 /* ── Poll Flask every 2 seconds ── */
@@ -153,22 +252,23 @@ let pollCount = 0;
 setInterval(async () => {
   try {
     const res = await fetch('/api/data');
+    if (handleAuthError(res)) return;
     const d = await res.json();
 
     // Solar row
-    setStatVal('.solar-row .stat-item:nth-child(1) .stat-value', d.solar.voltage, 'V');
-    setStatVal('.solar-row .stat-item:nth-child(2) .stat-value', d.solar.current, 'A');
-    setStatVal('.solar-row .stat-item:nth-child(3) .stat-value', d.solar.power_out, 'kW');
+    setStatVal('.solar-row .stat-item:nth-child(1) .stat-value', Number(d.solar.voltage).toFixed(1), 'V');
+    setStatVal('.solar-row .stat-item:nth-child(2) .stat-value', Number(d.solar.current).toFixed(1), 'A');
+    setStatVal('.solar-row .stat-item:nth-child(3) .stat-value', Number(d.solar.power_out).toFixed(1), 'kW');
 
     // Hydro row
-    setStatVal('.hydro-row .stat-item:nth-child(1) .stat-value', d.hydro.voltage, 'V');
-    setStatVal('.hydro-row .stat-item:nth-child(2) .stat-value', d.hydro.current, 'A');
-    setStatVal('.hydro-row .stat-item:nth-child(3) .stat-value', d.hydro.power_out, 'kW');
+    setStatVal('.hydro-row .stat-item:nth-child(1) .stat-value', Number(d.hydro.voltage).toFixed(1), 'V');
+    setStatVal('.hydro-row .stat-item:nth-child(2) .stat-value', Number(d.hydro.current).toFixed(1), 'A');
+    setStatVal('.hydro-row .stat-item:nth-child(3) .stat-value', Number(d.hydro.power_out).toFixed(1), 'kW');
 
     // Generator row
-    const gv = d.gen.running ? d.gen.voltage : '—';
-    const gc = d.gen.running ? d.gen.current : '—';
-    const gp = d.gen.running ? d.gen.power_out : 0;
+    const gv = d.gen.running ? Number(d.gen.voltage).toFixed(1) : '—';
+    const gc = d.gen.running ? Number(d.gen.current).toFixed(1) : '—';
+    const gp = d.gen.running ? Number(d.gen.power_out).toFixed(1) : '0.0';
     setStatVal('.gen-row .stat-item:nth-child(1) .stat-value', gv, 'V');
     setStatVal('.gen-row .stat-item:nth-child(2) .stat-value', gc, 'A');
     setStatVal('.gen-row .stat-item:nth-child(3) .stat-value', gp, 'kW');
@@ -193,8 +293,12 @@ setInterval(async () => {
       pushChart(chartGen,   genData,   d.gen.power_out);
     }
 
-    // Alerts
-    renderAlerts('.panel-alerts .alerts-list', d.alerts || []);
+    // Alerts — only update if dropdown shows today
+    const sel = document.getElementById('alert-date-select');
+    const today = new Date().toISOString().slice(0, 10);
+    if (!sel || sel.value === today) {
+      renderAlerts('.panel-alerts .alerts-list', d.alerts || []);
+    }
 
   } catch (e) {
     console.warn('Bridge not connected:', e.message);

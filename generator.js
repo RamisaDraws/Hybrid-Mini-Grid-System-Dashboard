@@ -4,6 +4,16 @@
    Bidirectional toggle + all gauges
    ════════════════════════════════════════════════ */
 
+/* ── Auth ── */
+function handleAuthError(res) {
+  if (res.status === 401) { window.location.href = '/login.html'; return true; }
+  return false;
+}
+async function doLogout() {
+  try { await fetch('/api/logout', { method: 'POST' }); } catch (e) {}
+  window.location.href = '/login.html';
+}
+
 /* ── Live clock ── */
 (function () {
   const pad = n => String(n).padStart(2, '0');
@@ -66,13 +76,7 @@ const CHART_OPTS = {
   }
 };
 
-function genTimeLabels(n, intervalMin) {
-  const now = new Date();
-  return Array.from({ length: n }, (_, i) => {
-    const t = new Date(now - (n-1-i) * intervalMin * 60 * 1000);
-    return `${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
-  });
-}
+const chartLabels = Array.from({ length: 16 }, () => '--:--');
 
 /* ── Gauge ── */
 function drawGauge(el, value, min, max, color, isStandby) {
@@ -135,15 +139,15 @@ function applyState(d) {
     drawGauge(document.getElementById('gauge-bat-voltage'), d.bat_voltage, 0, 30, '#ff6b6b');
     drawGauge(document.getElementById('gauge-bat-current'), d.bat_current, 0, 50, '#ff6b6b');
 
-    document.getElementById('gen-voltage-val').textContent = d.voltage;
-    document.getElementById('gen-current-val').textContent = d.current;
-    document.getElementById('rpm-val').textContent = d.rpm;
+    document.getElementById('gen-voltage-val').textContent = Number(d.voltage).toFixed(1);
+    document.getElementById('gen-current-val').textContent = Number(d.current).toFixed(1);
+    document.getElementById('rpm-val').textContent = Number(d.rpm).toFixed(0);
     document.getElementById('freq-val').textContent = Number(d.frequency).toFixed(1);
-    document.getElementById('bat-voltage-val').textContent = d.bat_voltage;
-    document.getElementById('bat-current-val').textContent = d.bat_current;
+    document.getElementById('bat-voltage-val').textContent = Number(d.bat_voltage).toFixed(1);
+    document.getElementById('bat-current-val').textContent = Number(d.bat_current).toFixed(1);
 
-    setVBar('vbar-gen-temp', 'gen-temp-val', (d.gen_temp/200)*100, d.gen_temp);
-    setVBar('vbar-coolant', 'coolant-val', (d.coolant_temp/200)*100, d.coolant_temp);
+    setVBar('vbar-gen-temp', 'gen-temp-val', (d.gen_temp/200)*100, Number(d.gen_temp).toFixed(1));
+    setVBar('vbar-coolant', 'coolant-val', (d.coolant_temp/200)*100, Number(d.coolant_temp).toFixed(1));
 
     // ATS → Generator
     document.getElementById('ats-grid-badge').className = 'ats-source-badge standby';
@@ -168,7 +172,7 @@ function applyState(d) {
     document.getElementById('gen-current-val').textContent = '0';
     document.getElementById('rpm-val').textContent = '0';
     document.getElementById('freq-val').textContent = '0';
-    document.getElementById('bat-voltage-val').textContent = d.bat_voltage;
+    document.getElementById('bat-voltage-val').textContent = Number(d.bat_voltage).toFixed(1);
     document.getElementById('bat-current-val').textContent = '0';
 
     setVBar('vbar-gen-temp', 'gen-temp-val', 0, '—');
@@ -184,14 +188,21 @@ function applyState(d) {
   }
 
   // Always update fuel/water
-  setVBar('vbar-fuel', 'fuel-val', d.fuel_pct, d.fuel_pct);
-  setVBar('vbar-water', 'water-val', d.water_pct, d.water_pct);
+  setVBar('vbar-fuel', 'fuel-val', d.fuel_pct, Number(d.fuel_pct).toFixed(1));
+  setVBar('vbar-water', 'water-val', d.water_pct, Number(d.water_pct).toFixed(1));
 }
 
+/* ── Alerts ── */
 function renderAlerts(alerts) {
   const el = document.querySelector('.gen-alerts .alerts-list');
   if (!el) return;
   el.innerHTML = '';
+  if (!alerts || alerts.length === 0) {
+    el.innerHTML = `<div class="alert-item alert-info"><div class="alert-dot dot-green"></div>
+      <div class="alert-body"><span class="alert-msg">No alerts</span>
+      <span class="alert-time">—</span></div></div>`;
+    return;
+  }
   alerts.slice().reverse().forEach(a => {
     const lc = a.level === 'warn' ? 'alert-warn' : a.level === 'crit' ? 'alert-crit' : 'alert-info';
     const dc = a.level === 'warn' ? 'dot-yellow' : a.level === 'crit' ? 'dot-red' : 'dot-green';
@@ -201,12 +212,69 @@ function renderAlerts(alerts) {
   });
 }
 
+/* ── Alert date dropdown ── */
+async function loadAlertDates() {
+  try {
+    const res = await fetch('/api/alerts/dates');
+    if (handleAuthError(res)) return;
+    const data = await res.json();
+    const sel = document.getElementById('alert-date-select');
+    if (!sel) return;
+    sel.innerHTML = '';
+    const today = new Date().toISOString().slice(0, 10);
+    const todayOpt = document.createElement('option');
+    todayOpt.value = today; todayOpt.textContent = 'Today';
+    sel.appendChild(todayOpt);
+    (data.dates || []).forEach(d => {
+      if (d === today) return;
+      const opt = document.createElement('option');
+      opt.value = d;
+      const parts = d.split('-');
+      opt.textContent = `${parts[2]}/${parts[1]}/${parts[0].slice(2)}`;
+      sel.appendChild(opt);
+    });
+  } catch (e) {}
+}
+
+async function onAlertDateChange() {
+  const sel = document.getElementById('alert-date-select');
+  if (!sel) return;
+  try {
+    const res = await fetch(`/api/alerts/${sel.value}?source=generator`);
+    if (handleAuthError(res)) return;
+    const data = await res.json();
+    renderAlerts(data.alerts || []);
+  } catch (e) {}
+}
+
+/* ── Load chart history from server ── */
+async function loadChartHistory() {
+  try {
+    const res = await fetch('/api/chart_history');
+    if (handleAuthError(res)) return;
+    const h = await res.json();
+    if (h.gen_power && h.gen_power.length > 0) {
+      const pad = (arr, n) => { const a = arr.slice(-n); while (a.length < n) a.unshift(0); return a; };
+      const gp = pad(h.gen_power, 16);
+      const gl = pad(h.gen_load, 16);
+      const ts = pad(h.timestamps, 16);
+      for (let i = 0; i < 16; i++) {
+        powerOutData[i] = gp[i];
+        loadDemandData[i] = gl[i];
+        if (ts[i]) chartLabels[i] = ts[i];
+      }
+      if (dualChart) { dualChart.data.labels = chartLabels; dualChart.update('none'); }
+    }
+  } catch (e) { console.warn('Chart history load failed'); }
+}
+
 /* ── Init ── */
 document.addEventListener('DOMContentLoaded', () => {
   // Toggle button → send to Flask
   document.getElementById('gen-toggle-btn').addEventListener('click', async () => {
     try {
-      await fetch('/api/gen_toggle', { method: 'POST' });
+      const res = await fetch('/api/gen_toggle', { method: 'POST' });
+      if (handleAuthError(res)) return;
     } catch (e) { console.warn('Toggle failed:', e.message); }
   });
 
@@ -221,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     dualChart = new Chart(c, {
       type: 'line',
-      data: { labels: genTimeLabels(16, 15),
+      data: { labels: chartLabels,
         datasets: [
           { label: 'Power Out (kW)', data: powerOutData, borderColor: '#ff6b6b', borderWidth: 2,
             backgroundColor: gP, fill: true, tension: 0.4, pointRadius: 0,
@@ -241,7 +309,9 @@ document.addEventListener('DOMContentLoaded', () => {
     gen_temp: 0, coolant_temp: 0, fuel_pct: 72, water_pct: 55,
     bat_voltage: 24, bat_current: 0, power_out: 0, load: 35 });
 
+  loadChartHistory();
   loadThresholds();
+  loadAlertDates();
 });
 
 /* ── Poll ── */
@@ -249,6 +319,7 @@ let pollCount = 0;
 setInterval(async () => {
   try {
     const res = await fetch('/api/generator');
+    if (handleAuthError(res)) return;
     const d = await res.json();
     applyState(d);
 
@@ -259,7 +330,12 @@ setInterval(async () => {
       if (dualChart) dualChart.update('none');
     }
 
-    renderAlerts(d.alerts || []);
+    // Alerts
+    const sel = document.getElementById('alert-date-select');
+    const today = new Date().toISOString().slice(0, 10);
+    if (!sel || sel.value === today) {
+      renderAlerts(d.alerts || []);
+    }
   } catch (e) { console.warn('Bridge not connected:', e.message); }
 }, 2000);
 
@@ -267,6 +343,7 @@ setInterval(async () => {
 async function loadThresholds() {
   try {
     const res = await fetch('/api/thresholds/generator');
+    if (handleAuthError(res)) return;
     const t = await res.json();
     Object.keys(t).forEach(k => {
       const el = document.getElementById('thresh-' + k);
@@ -281,10 +358,11 @@ async function saveThresholds() {
     payload[el.id.replace('thresh-', '')] = parseFloat(el.value) || 0;
   });
   try {
-    await fetch('/api/thresholds/generator', {
+    const res = await fetch('/api/thresholds/generator', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+    if (handleAuthError(res)) return;
     const btn = document.getElementById('thresh-save-btn');
     if (btn) { btn.textContent = 'Saved ✓'; setTimeout(() => btn.textContent = 'Save Thresholds', 1500); }
   } catch (e) {}

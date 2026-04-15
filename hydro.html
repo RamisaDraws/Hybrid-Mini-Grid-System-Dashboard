@@ -16,7 +16,7 @@
     <div class="site-title">
       <span class="title-main">Minigrid System Monitor</span>
       <span class="title-sep">/</span>
-      <a href="village_map.html" class="title-location">
+      <a href="https://maps.google.com/?cid=12894065327944216015" target="_blank" rel="noopener" class="title-location">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         Karazhar
       </a>
@@ -27,7 +27,7 @@
     <a href="solar.html" class="nav-link solar-link">Solar</a>
     <a href="hydro.html" class="nav-link hydro-link active">Hydro</a>
     <a href="generator.html" class="nav-link gen-link">Generator</a>
-    <a href="#" class="nav-link">Login</a>
+    <a href="#" class="nav-link" onclick="doLogout(); return false;">Logout</a>
   </nav>
   <div class="topbar-right">
     <div class="live-info">
@@ -48,7 +48,7 @@
   <a href="solar.html" class="nav-link solar-link">Solar</a>
   <a href="hydro.html" class="nav-link hydro-link active">Hydro</a>
   <a href="generator.html" class="nav-link gen-link">Generator</a>
-  <a href="#" class="nav-link">Login</a>
+  <a href="#" class="nav-link" onclick="doLogout(); return false;">Logout</a>
 </nav>
 
 <!-- ── MAIN ── -->
@@ -58,7 +58,10 @@
   <div class="hydro-left">
     <div class="hydro-image-card">
       <div class="hydro-image-inner">
-        <div class="hydro-image-placeholder">
+          <img src="images/hydro.png" alt="In-Pipe Micro-Hydropower Turbine"
+            style="width:100%;height:100%;object-fit:cover;display:block;"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div class="hydro-image-placeholder" style="display:none;">
           <svg class="pipe-icon" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="32" cy="32" r="30" stroke="#3ecfcf" stroke-width="2" stroke-dasharray="6 3" opacity="0.35"/>
             <circle cx="32" cy="32" r="26" stroke="#3ecfcf" stroke-width="3" opacity="0.5"/>
@@ -109,7 +112,7 @@
       <canvas id="gauge-pressure" class="gauge-canvas" width="200" height="114"></canvas>
       <div class="gauge-value-block">
         <span class="gauge-value hydro-gauge-val" id="pressure-val">--</span>
-        <span class="gauge-unit">METRES HEAD</span>
+        <span class="gauge-unit">m</span>
       </div>
       <span class="gauge-subtext">Range 26–60 m</span>
     </div>
@@ -140,7 +143,7 @@
       <canvas id="gauge-voltage" class="gauge-canvas" width="200" height="114"></canvas>
       <div class="gauge-value-block">
         <span class="gauge-value hydro-gauge-val" id="voltage-val">--</span>
-        <span class="gauge-unit">VOLTS (AC)</span>
+        <span class="gauge-unit">V</span>
       </div>
       <span class="gauge-subtext">Nominal 220 V</span>
     </div>
@@ -150,7 +153,7 @@
       <canvas id="gauge-current" class="gauge-canvas" width="200" height="114"></canvas>
       <div class="gauge-value-block">
         <span class="gauge-value hydro-gauge-val" id="current-val">--</span>
-        <span class="gauge-unit">AMPERES</span>
+        <span class="gauge-unit">A</span>
       </div>
       <span class="gauge-subtext">Rated output load</span>
     </div>
@@ -184,6 +187,9 @@
     <div class="panel-label">
       <span class="dot dot-green blink"></span>
       Hydro Alerts
+    </div>
+    <div class="alert-date-picker">
+      <select id="alert-date-select" onchange="onAlertDateChange()"></select>
     </div>
     <div class="alerts-list">
       <div class="alert-item alert-info">

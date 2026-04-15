@@ -16,7 +16,7 @@
     <div class="site-title">
       <span class="title-main">Minigrid System Monitor</span>
       <span class="title-sep">/</span>
-      <a href="village_map.html" class="title-location">
+      <a href="https://maps.google.com/?cid=12894065327944216015" target="_blank" rel="noopener" class="title-location">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         Karazhar
       </a>
@@ -27,7 +27,7 @@
     <a href="solar.html" class="nav-link solar-link">Solar</a>
     <a href="hydro.html" class="nav-link hydro-link">Hydro</a>
     <a href="generator.html" class="nav-link gen-link active">Generator</a>
-    <a href="#" class="nav-link">Login</a>
+    <a href="#" class="nav-link" onclick="doLogout(); return false;">Logout</a>
   </nav>
   <div class="topbar-right">
     <div class="live-info">
@@ -48,7 +48,7 @@
   <a href="solar.html" class="nav-link solar-link">Solar</a>
   <a href="hydro.html" class="nav-link hydro-link">Hydro</a>
   <a href="generator.html" class="nav-link gen-link active">Generator</a>
-  <a href="#" class="nav-link">Login</a>
+  <a href="#" class="nav-link" onclick="doLogout(); return false;">Logout</a>
 </nav>
 
 <!-- ── MAIN ── -->
@@ -71,7 +71,10 @@
       </div>
       <div class="gen-image-card">
         <div class="gen-image-inner">
-          <div class="gen-image-placeholder">
+          <img src="images/generator.png" alt="Diesel Generator — Emergency Backup"
+            style="width:100%;height:100%;object-fit:cover;display:block;"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+          <div class="gen-image-placeholder" style="display:none;">
             <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
               <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
             </svg>
@@ -108,7 +111,7 @@
       <canvas id="gauge-gen-voltage" class="gauge-canvas" width="200" height="114"></canvas>
       <div class="gauge-value-block">
         <span class="gauge-value gen-gauge-val" id="gen-voltage-val">0</span>
-        <span class="gauge-unit">VOLTS (AC)</span>
+        <span class="gauge-unit">V</span>
       </div>
       <span class="gauge-subtext">Nominal 220 V</span>
     </div>
@@ -117,7 +120,7 @@
       <canvas id="gauge-gen-current" class="gauge-canvas" width="200" height="114"></canvas>
       <div class="gauge-value-block">
         <span class="gauge-value gen-gauge-val" id="gen-current-val">0</span>
-        <span class="gauge-unit">AMPERES</span>
+        <span class="gauge-unit">A</span>
       </div>
       <span class="gauge-subtext">Max rated load</span>
     </div>
@@ -135,26 +138,22 @@
       <div class="vbar-item">
         <span class="vbar-label">Gen Temp</span>
         <div class="vbar-track"><div class="vbar-fill vbar-gen-temp" id="vbar-gen-temp" style="height:0%"></div></div>
-        <span class="vbar-value gen-temp-col" id="gen-temp-val">—</span>
-        <span class="vbar-unit">°C</span>
+        <div class="vbar-val-row"><span class="vbar-value gen-temp-col" id="gen-temp-val">—</span><span class="vbar-unit">°C</span></div>
       </div>
       <div class="vbar-item">
         <span class="vbar-label">Coolant</span>
         <div class="vbar-track"><div class="vbar-fill vbar-coolant" id="vbar-coolant" style="height:0%"></div></div>
-        <span class="vbar-value coolant-col" id="coolant-val">—</span>
-        <span class="vbar-unit">°C</span>
+        <div class="vbar-val-row"><span class="vbar-value coolant-col" id="coolant-val">—</span><span class="vbar-unit">°C</span></div>
       </div>
       <div class="vbar-item">
         <span class="vbar-label">Fuel</span>
         <div class="vbar-track"><div class="vbar-fill vbar-fuel" id="vbar-fuel" style="height:0%"></div></div>
-        <span class="vbar-value fuel-col" id="fuel-val">—</span>
-        <span class="vbar-unit">%</span>
+        <div class="vbar-val-row"><span class="vbar-value fuel-col" id="fuel-val">—</span><span class="vbar-unit">%</span></div>
       </div>
       <div class="vbar-item">
         <span class="vbar-label">Water</span>
         <div class="vbar-track"><div class="vbar-fill vbar-water" id="vbar-water" style="height:0%"></div></div>
-        <span class="vbar-value water-col" id="water-val">—</span>
-        <span class="vbar-unit">%</span>
+        <div class="vbar-val-row"><span class="vbar-value water-col" id="water-val">—</span><span class="vbar-unit">%</span></div>
       </div>
     </div>
 
@@ -163,7 +162,7 @@
       <canvas id="gauge-freq" class="gauge-canvas" width="200" height="114"></canvas>
       <div class="gauge-value-block">
         <span class="gauge-value gen-gauge-val" id="freq-val">0</span>
-        <span class="gauge-unit">HERTZ</span>
+        <span class="gauge-unit">Hz</span>
       </div>
       <span class="gauge-subtext">Nominal 50 Hz</span>
     </div>
@@ -173,7 +172,7 @@
       <canvas id="gauge-bat-voltage" class="gauge-canvas" width="200" height="114"></canvas>
       <div class="gauge-value-block">
         <span class="gauge-value gen-gauge-val" id="bat-voltage-val">24</span>
-        <span class="gauge-unit">VOLTS (DC)</span>
+        <span class="gauge-unit">V DC</span>
       </div>
       <span class="gauge-subtext">Nominal 24 V DC</span>
     </div>
@@ -182,7 +181,7 @@
       <canvas id="gauge-bat-current" class="gauge-canvas" width="200" height="114"></canvas>
       <div class="gauge-value-block">
         <span class="gauge-value gen-gauge-val" id="bat-current-val">0</span>
-        <span class="gauge-unit">AMPERES</span>
+        <span class="gauge-unit">A</span>
       </div>
       <span class="gauge-subtext">Charge / discharge</span>
     </div>
@@ -272,6 +271,9 @@
     <div class="panel-label">
       <span class="dot dot-yellow"></span>
       Generator Alerts
+    </div>
+    <div class="alert-date-picker">
+      <select id="alert-date-select" onchange="onAlertDateChange()"></select>
     </div>
     <div class="alerts-list">
       <div class="alert-item alert-info">
