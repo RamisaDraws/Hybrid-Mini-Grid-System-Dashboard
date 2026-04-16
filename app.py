@@ -137,10 +137,10 @@ def _check_range_dedup(source, label, value, key_high, key_low):
         currently_high = value > hi
         was_high = _active_conditions.get(cond_key, False)
         if currently_high and not was_high:
-            _add_alert(source, f"{label} HIGH — {value} (threshold: {hi})", "warn")
+            _add_alert(source, f"{label} HIGH — {value:.1f} (Threshold: {hi})", "warn")
             _active_conditions[cond_key] = True
         elif not currently_high and was_high:
-            _add_alert(source, f"{label} returned to normal — {value} (was above {hi})", "info")
+            _add_alert(source, f"{label} returned to normal — {value:.1f} (Threshold: {hi})", "info")
             _active_conditions[cond_key] = False
 
     if lo is not None:
@@ -148,10 +148,10 @@ def _check_range_dedup(source, label, value, key_high, key_low):
         currently_low = value < lo
         was_low = _active_conditions.get(cond_key, False)
         if currently_low and not was_low:
-            _add_alert(source, f"{label} LOW — {value} (threshold: {lo})", "warn")
+            _add_alert(source, f"{label} LOW — {value:.1f} (threshold: {lo})", "warn")
             _active_conditions[cond_key] = True
         elif not currently_low and was_low:
-            _add_alert(source, f"{label} returned to normal — {value} (was below {lo})", "info")
+            _add_alert(source, f"{label} returned to normal — {value:.1f} (was below {lo})", "info")
             _active_conditions[cond_key] = False
 
 def _check_state_change(key, new_val, on_msg, off_msg, source):
@@ -332,7 +332,7 @@ def api_data():
     with _lock:
         today = _load_alerts_for_date()
         return jsonify(solar=dict(_solar), hydro=dict(_hydro),
-                       gen=dict(_gen), alerts=today[-30:])
+                       gen=dict(_gen), alerts=today)
 
 @app.route('/api/solar')
 @login_required
@@ -340,7 +340,7 @@ def api_solar():
     with _lock:
         today = _load_alerts_for_date()
         sa = [a for a in today if a.get("source") == "solar"]
-        return jsonify(**_solar, alerts=sa[-30:])
+        return jsonify(**_solar, alerts=sa)
 
 @app.route('/api/hydro')
 @login_required
@@ -348,7 +348,7 @@ def api_hydro():
     with _lock:
         today = _load_alerts_for_date()
         ha = [a for a in today if a.get("source") == "hydro"]
-        return jsonify(**_hydro, alerts=ha[-30:])
+        return jsonify(**_hydro, alerts=ha)
 
 @app.route('/api/generator')
 @login_required
@@ -356,7 +356,7 @@ def api_generator():
     with _lock:
         today = _load_alerts_for_date()
         ga = [a for a in today if a.get("source") == "generator"]
-        return jsonify(**_gen, alerts=ga[-30:])
+        return jsonify(**_gen, alerts=ga)
 
 # ══════════════════════════════════════════════════════════
 #  API — ALERTS BY DATE

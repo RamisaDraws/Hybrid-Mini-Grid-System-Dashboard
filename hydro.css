@@ -283,7 +283,7 @@
 
 .hydro-gauge-val {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 500;
   line-height: 1;
   color: var(--hydro);
@@ -291,8 +291,8 @@
 
 .gauge-unit {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
-  color: var(--text-dim);
+  font-size: 1rem;
+  color: var(--hydro);
   letter-spacing: 0.04em;
 }
 
@@ -461,15 +461,15 @@
   }
 
   .hydro-alerts .alerts-list {
-    flex-direction: row;
-    flex-wrap: wrap;
-    max-height: none;
-    overflow: visible;
+    flex-direction: column;
+    
+    max-height: 400px;
+    overflow-y: auto;
   }
 
   .hydro-alerts .alert-item {
-    flex: 1 1 200px;
-    max-width: 300px;
+    flex: none;
+    max-width: none;
   }
 
   .hydro-center {
@@ -519,7 +519,7 @@
 
   /* Center cards: 2-col gauge row still fits on phone */
   .hydro-center {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
 
   /* Flow chart stays full width (already grid-column: 1/-1) */
@@ -540,14 +540,14 @@
   }
 
   .gauge-unit {
-    font-size: 0.55rem;
+    font-size: 1rem;
     letter-spacing: 0.04em;
     white-space: nowrap;
     text-overflow: ellipsis;
   }
 
   .gauge-subtext {
-    font-size: 0.55rem;
+    font-size: 0.58rem;
     text-align: center;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -606,7 +606,7 @@
 
   .hydro-alerts .alerts-list {
     flex-direction: column;
-    max-height: 320px;
+    max-height: 400px;
     overflow-y: auto;
   }
 
@@ -631,7 +631,7 @@
   }
 
   .gauge-unit {
-    font-size: 0.48rem;
+    font-size: 1rem;
   }
 
   .pump-meta {

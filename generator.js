@@ -83,7 +83,7 @@ function drawGauge(el, value, min, max, color, isStandby) {
   if (!el) return;
   const c = el.getContext('2d');
   const W = el.width, H = el.height;
-  const cx = W/2, cy = H-4, r = Math.min(W/2, H)-14, lw = 12;
+  const cx = W/2, cy = H-25, r = Math.min(W/2, H)-14, lw = 12;
   c.clearRect(0, 0, W, H);
   c.beginPath(); c.arc(cx, cy, r, Math.PI, 0, false);
   c.strokeStyle = 'rgba(255,255,255,0.06)'; c.lineWidth = lw; c.lineCap = 'round'; c.stroke();
@@ -101,9 +101,9 @@ function drawGauge(el, value, min, max, color, isStandby) {
     c.lineTo(cx+(r+lw/2+2)*Math.cos(a), cy+(r+lw/2+2)*Math.sin(a));
     c.stroke();
   }
-  c.fillStyle = 'rgba(255,255,255,0.18)'; c.font = '9px JetBrains Mono';
-  c.textAlign = 'left'; c.fillText(min, cx-r-2, cy+14);
-  c.textAlign = 'right'; c.fillText(max, cx+r+2, cy+14);
+  c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '11px JetBrains Mono';
+  c.textAlign = 'left'; c.fillText(min, cx-r-2, cy+25);
+  c.textAlign = 'right'; c.fillText(max, cx+r+12, cy+25);
 }
 
 function setVBar(barId, valId, pct, displayVal) {

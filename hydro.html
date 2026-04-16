@@ -78,10 +78,13 @@
       </div>
       <div class="hydro-image-footer">
         <span class="hydro-image-label">In-Pipe Hydro — Astana Water Supply Pipeline</span>
+
+        <!--
         <span class="hydro-capacity-badge">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           ~250–270 kW rated
         </span>
+        -->
       </div>
     </div>
 
@@ -109,12 +112,12 @@
 
     <div class="pressure-gauge-card">
       <span class="gauge-card-label">Water Pressure</span>
-      <canvas id="gauge-pressure" class="gauge-canvas" width="200" height="114"></canvas>
+      <canvas id="gauge-pressure" class="gauge-canvas" width="200" height="125"></canvas>
       <div class="gauge-value-block">
         <span class="gauge-value hydro-gauge-val" id="pressure-val">--</span>
-        <span class="gauge-unit">m</span>
+        <span class="gauge-unit">PSI</span>
       </div>
-      <span class="gauge-subtext">Range 26–60 m</span>
+      <span class="gauge-subtext">Range 26–60 PSI</span>
     </div>
 
     <div class="pump-state-card">
@@ -140,7 +143,7 @@
 
     <div class="gauge-card">
       <span class="gauge-card-label">Voltage</span>
-      <canvas id="gauge-voltage" class="gauge-canvas" width="200" height="114"></canvas>
+      <canvas id="gauge-voltage" class="gauge-canvas" width="200" height="125"></canvas>
       <div class="gauge-value-block">
         <span class="gauge-value hydro-gauge-val" id="voltage-val">--</span>
         <span class="gauge-unit">V</span>
@@ -150,7 +153,7 @@
 
     <div class="gauge-card">
       <span class="gauge-card-label">Current</span>
-      <canvas id="gauge-current" class="gauge-canvas" width="200" height="114"></canvas>
+      <canvas id="gauge-current" class="gauge-canvas" width="200" height="125"></canvas>
       <div class="gauge-value-block">
         <span class="gauge-value hydro-gauge-val" id="current-val">--</span>
         <span class="gauge-unit">A</span>

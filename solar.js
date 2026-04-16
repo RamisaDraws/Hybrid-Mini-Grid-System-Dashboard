@@ -91,7 +91,7 @@ const chartLabels = Array.from({ length: 16 }, () => '--:--');
 function drawGauge(el, value, max, color) {
   const c = el.getContext('2d');
   const W = el.width, H = el.height;
-  const cx = W / 2, cy = H - 4;
+  const cx = W / 2, cy = H - 25;
   const r = Math.min(W / 2, H) - 14, lw = 12;
   c.clearRect(0, 0, W, H);
   c.beginPath(); c.arc(cx, cy, r, Math.PI, 0, false);
@@ -108,9 +108,9 @@ function drawGauge(el, value, max, color) {
     c.lineTo(cx + (r + lw/2 + 2) * Math.cos(a), cy + (r + lw/2 + 2) * Math.sin(a));
     c.stroke();
   }
-  c.fillStyle = 'rgba(255,255,255,0.18)'; c.font = '9px JetBrains Mono';
-  c.textAlign = 'left'; c.fillText('0', cx - r - 2, cy + 14);
-  c.textAlign = 'right'; c.fillText(max, cx + r + 2, cy + 14);
+  c.fillStyle = 'rgba(255,255,255,0.7)'; c.font = '12px JetBrains Mono';
+  c.textAlign = 'left'; c.fillText('0', cx - r - 2, cy + 25);
+  c.textAlign = 'right'; c.fillText(max, cx + r + 10, cy + 25);
 }
 
 /* ── Chart data (rolling) ── */

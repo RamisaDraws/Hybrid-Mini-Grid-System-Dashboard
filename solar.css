@@ -235,7 +235,7 @@
 
 .gauge-value {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 500;
   line-height: 1;
   color: var(--solar);
@@ -243,8 +243,8 @@
 
 .gauge-unit {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
-  color: var(--text-dim);
+  font-size: 1rem;
+  color: var(--solar);
   letter-spacing: 0.04em;
 }
 
@@ -491,15 +491,14 @@
   }
 
   .solar-alerts .alerts-list {
-    flex-direction: row;
-    flex-wrap: wrap;
-    max-height: none;
-    overflow: visible;
+    flex-direction: column;
+    max-height: 400px;
+    overflow-y: auto;
   }
 
   .solar-alerts .alert-item {
-    flex: 1 1 200px;
-    max-width: 300px;
+    flex: none;
+    max-width: none;
   }
 
   .solar-center {
@@ -536,14 +535,14 @@
   }
 
   .gauge-unit {
-    font-size: 0.58rem;
+    font-size: 1rem;
     letter-spacing: 0.04em;  /* reduce from 0.1em */
     white-space: nowrap;
     
     text-overflow: ellipsis;
   }
   .gauge-subtext {
-    font-size: 0.58rem;
+    font-size: 0.68rem;
     text-align: center;
     white-space: nowrap;
     
@@ -597,7 +596,7 @@
   }
 
   .temp-vbar-track {
-    height: 45px;
+    height: 135px;
   }
 
   /* Gauge canvas — constrain within card */
@@ -668,7 +667,7 @@
   }
 
   .temp-vbar-track {
-    height: 35px;
+    height: 85px;
     width: 5px;
   }
 
@@ -685,6 +684,6 @@
   }
 
   .gauge-unit {
-    font-size: 0.5rem;
+    font-size: 0.7rem;
   }
 }
