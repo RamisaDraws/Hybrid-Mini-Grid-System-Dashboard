@@ -37,7 +37,8 @@ _gen = {
     "rpm": 0, "frequency": 0,
     "gen_temp": 0, "coolant_temp": 0,
     "fuel_pct": 72, "water_pct": 55,
-    "bat_voltage": 24, "bat_current": 0
+    "bat_voltage": 24, "bat_current": 0,
+    "oil_pressure": 0, "vibration": 0
 }
 
 _gen_pending = {"cmd": ""}
@@ -71,7 +72,9 @@ _thresholds = {
         "coolant_high": 110, "coolant_low": 0,
         "fuel_high": 100, "fuel_low": 15,
         "water_high": 100, "water_low": 15,
-        "bat_voltage_high": 30, "bat_voltage_low": 20
+        "bat_voltage_high": 30, "bat_voltage_low": 20,
+        "oil_pressure_high": 70, "oil_pressure_low": 15,
+        "vibration_high": 45, "vibration_low": 0
     }
 }
 
@@ -212,6 +215,10 @@ def _generate_alerts():
                            "water_high", "water_low")
         _check_range_dedup("generator", "Battery Voltage", _gen["bat_voltage"],
                            "bat_voltage_high", "bat_voltage_low")
+        _check_range_dedup("generator", "Oil Pressure", _gen["oil_pressure"],
+                           "oil_pressure_high", "oil_pressure_low")
+        _check_range_dedup("generator", "Vibration", _gen["vibration"],
+                           "vibration_high", "vibration_low")
     _check_state_change("gen_running", _gen["running"],
                         "Generator started", "Generator stopped", "generator")
 

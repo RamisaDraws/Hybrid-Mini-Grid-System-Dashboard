@@ -59,6 +59,8 @@ GEN_VARS = {
     "gen_water":         "water_pct",
     "gen_bat_voltage":   "bat_voltage",
     "gen_bat_current":   "bat_current",
+    "gen_oil_pressure":  "oil_pressure",
+    "gen_vibration":     "vibration",
 }
 
 # Generator state (toggle)

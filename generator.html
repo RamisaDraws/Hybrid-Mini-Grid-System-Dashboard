@@ -106,6 +106,8 @@
 
   <!-- ════ CENTER ════ -->
   <div class="gen-center">
+
+    <!-- Row 1: Voltage | Current | Vibration -->
     <div class="gauge-card">
       <span class="gauge-card-label">Generator Voltage</span>
       <canvas id="gauge-gen-voltage" class="gauge-canvas" width="200" height="125"></canvas>
@@ -125,15 +127,16 @@
       <span class="gauge-subtext">Max rated load</span>
     </div>
     <div class="gauge-card">
-      <span class="gauge-card-label">Engine RPM</span>
-      <canvas id="gauge-rpm" class="gauge-canvas" width="200" height="125"></canvas>
+      <span class="gauge-card-label">Generator Vibration</span>
+      <canvas id="gauge-vibration" class="gauge-canvas" width="200" height="125"></canvas>
       <div class="gauge-value-block">
-        <span class="gauge-value gen-gauge-val" id="rpm-val">0</span>
-        <span class="gauge-unit">RPM</span>
+        <span class="gauge-value gen-gauge-val" id="vibration-val">0</span>
+        <span class="gauge-unit">mm/s</span>
       </div>
-      <span class="gauge-subtext">Rated 1500 RPM</span>
+      <span class="gauge-subtext">Range 0–60 mm/s</span>
     </div>
 
+    <!-- Row 2: Bar group (span 2) | Oil Pressure -->
     <div class="bar-group-card">
       <div class="vbar-item">
         <span class="vbar-label">Gen Temp</span>
@@ -157,6 +160,27 @@
       </div>
     </div>
 
+    <div class="gauge-card">
+      <span class="gauge-card-label">Oil Pressure</span>
+      <canvas id="gauge-oil-pressure" class="gauge-canvas" width="200" height="125"></canvas>
+      <div class="gauge-value-block">
+        <span class="gauge-value gen-gauge-val" id="oil-pressure-val">0</span>
+        <span class="gauge-unit">PSI</span>
+      </div>
+      <span class="gauge-subtext">Range 0–80 PSI</span>
+    </div>
+
+    <!-- Row 3: RPM | Frequency | Battery Voltage -->
+    <div class="gauge-card">
+      <span class="gauge-card-label">Engine RPM</span>
+      <canvas id="gauge-rpm" class="gauge-canvas" width="200" height="125"></canvas>
+      <div class="gauge-value-block">
+        <span class="gauge-value gen-gauge-val" id="rpm-val">0</span>
+        <span class="gauge-unit">RPM</span>
+      </div>
+      <span class="gauge-subtext">Rated 1500 RPM</span>
+    </div>
+
     <div class="gauge-card freq-gauge-card">
       <span class="gauge-card-label">Frequency</span>
       <canvas id="gauge-freq" class="gauge-canvas" width="200" height="125"></canvas>
@@ -176,6 +200,8 @@
       </div>
       <span class="gauge-subtext">Nominal 24 V DC</span>
     </div>
+
+    <!-- Row 4: Battery Current | ATS (span 2) -->
     <div class="gauge-card">
       <span class="gauge-card-label">Battery Current</span>
       <canvas id="gauge-bat-current" class="gauge-canvas" width="200" height="125"></canvas>
@@ -258,6 +284,20 @@
           <div class="thresh-pair">
             <label>High<input type="number" class="threshold-input" id="thresh-bat_voltage_high" value="30"></label>
             <label>Low<input type="number" class="threshold-input" id="thresh-bat_voltage_low" value="20"></label>
+          </div>
+        </div>
+        <div class="thresh-group">
+          <span class="thresh-group-title">Oil Pressure</span>
+          <div class="thresh-pair">
+            <label>High<input type="number" class="threshold-input" id="thresh-oil_pressure_high" value="70"></label>
+            <label>Low<input type="number" class="threshold-input" id="thresh-oil_pressure_low" value="15"></label>
+          </div>
+        </div>
+        <div class="thresh-group">
+          <span class="thresh-group-title">Vibration</span>
+          <div class="thresh-pair">
+            <label>High<input type="number" class="threshold-input" id="thresh-vibration_high" value="45"></label>
+            <label>Low<input type="number" class="threshold-input" id="thresh-vibration_low" value="0"></label>
           </div>
         </div>
       </div>

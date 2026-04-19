@@ -232,9 +232,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  drawGauge(document.getElementById('gauge-pressure'), 0, 26, 60, '#3ecfcf');
-  drawGauge(document.getElementById('gauge-voltage'), 0, 0, 260, '#3ecfcf');
-  drawGauge(document.getElementById('gauge-current'), 0, 0, 1500, '#3ecfcf');
+  drawGauge(document.getElementById('gauge-pressure'), 0, 0, 64, '#3ecfcf');
+  drawGauge(document.getElementById('gauge-voltage'), 0, 0, 440, '#3ecfcf');
+  drawGauge(document.getElementById('gauge-current'), 0, 0, 300, '#3ecfcf');
 
   loadChartHistory();
   loadThresholds();
@@ -249,9 +249,9 @@ setInterval(async () => {
     if (handleAuthError(res)) return;
     const d = await res.json();
 
-    drawGauge(document.getElementById('gauge-pressure'), d.pressure, 26, 60, '#3ecfcf');
-    drawGauge(document.getElementById('gauge-voltage'), d.voltage, 0, 260, '#3ecfcf');
-    drawGauge(document.getElementById('gauge-current'), d.current, 0, 1500, '#3ecfcf');
+    drawGauge(document.getElementById('gauge-pressure'), d.pressure, 0, 64, '#3ecfcf');
+    drawGauge(document.getElementById('gauge-voltage'), d.voltage, 0, 440, '#3ecfcf');
+    drawGauge(document.getElementById('gauge-current'), d.current, 0, 300, '#3ecfcf');
 
     document.getElementById('pressure-val').textContent = Number(d.pressure).toFixed(1);
     document.getElementById('voltage-val').textContent = Number(d.voltage).toFixed(1);

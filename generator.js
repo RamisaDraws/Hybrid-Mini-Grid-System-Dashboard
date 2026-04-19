@@ -132,15 +132,19 @@ function applyState(d) {
     if (btn) btn.className = 'gen-toggle-btn active';
     if (btnLabel) btnLabel.textContent = 'Stop Generator';
 
-    drawGauge(document.getElementById('gauge-gen-voltage'), d.voltage, 0, 260, '#ff6b6b');
-    drawGauge(document.getElementById('gauge-gen-current'), d.current, 0, 300, '#ff6b6b');
+    drawGauge(document.getElementById('gauge-gen-voltage'), d.voltage, 0, 500, '#ff6b6b');
+    drawGauge(document.getElementById('gauge-gen-current'), d.current, 0, 200, '#ff6b6b');
+    drawGauge(document.getElementById('gauge-vibration'), d.vibration, 0, 60, '#ff6b6b');
+    drawGauge(document.getElementById('gauge-oil-pressure'), d.oil_pressure, 0, 80, '#ff6b6b');
     drawGauge(document.getElementById('gauge-rpm'), d.rpm, 0, 2000, '#ff6b6b');
-    drawGauge(document.getElementById('gauge-freq'), d.frequency, 45, 55, '#ff6b6b');
+    drawGauge(document.getElementById('gauge-freq'), d.frequency, 0, 60, '#ff6b6b');
     drawGauge(document.getElementById('gauge-bat-voltage'), d.bat_voltage, 0, 30, '#ff6b6b');
-    drawGauge(document.getElementById('gauge-bat-current'), d.bat_current, 0, 50, '#ff6b6b');
+    drawGauge(document.getElementById('gauge-bat-current'), d.bat_current, 0, 10, '#ff6b6b');
 
     document.getElementById('gen-voltage-val').textContent = Number(d.voltage).toFixed(1);
     document.getElementById('gen-current-val').textContent = Number(d.current).toFixed(1);
+    document.getElementById('vibration-val').textContent = Number(d.vibration).toFixed(1);
+    document.getElementById('oil-pressure-val').textContent = Number(d.oil_pressure).toFixed(1);
     document.getElementById('rpm-val').textContent = Number(d.rpm).toFixed(0);
     document.getElementById('freq-val').textContent = Number(d.frequency).toFixed(1);
     document.getElementById('bat-voltage-val').textContent = Number(d.bat_voltage).toFixed(1);
@@ -162,14 +166,16 @@ function applyState(d) {
     if (btn) btn.className = 'gen-toggle-btn';
     if (btnLabel) btnLabel.textContent = 'Start Generator';
 
-    ['gauge-gen-voltage','gauge-gen-current','gauge-rpm','gauge-freq'].forEach(id => {
+    ['gauge-gen-voltage','gauge-gen-current','gauge-rpm','gauge-freq','gauge-vibration','gauge-oil-pressure'].forEach(id => {
       drawGauge(document.getElementById(id), 0, 0, 1, '#ff6b6b', true);
     });
     drawGauge(document.getElementById('gauge-bat-voltage'), d.bat_voltage, 0, 30, '#ff6b6b');
-    drawGauge(document.getElementById('gauge-bat-current'), 0, 0, 50, '#ff6b6b', true);
+    drawGauge(document.getElementById('gauge-bat-current'), 0, 0, 10, '#ff6b6b', true);
 
     document.getElementById('gen-voltage-val').textContent = '0';
     document.getElementById('gen-current-val').textContent = '0';
+    document.getElementById('vibration-val').textContent = '0';
+    document.getElementById('oil-pressure-val').textContent = '0';
     document.getElementById('rpm-val').textContent = '0';
     document.getElementById('freq-val').textContent = '0';
     document.getElementById('bat-voltage-val').textContent = Number(d.bat_voltage).toFixed(1);
@@ -307,7 +313,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Init standby
   applyState({ running: 0, voltage: 0, current: 0, rpm: 0, frequency: 0,
     gen_temp: 0, coolant_temp: 0, fuel_pct: 72, water_pct: 55,
-    bat_voltage: 24, bat_current: 0, power_out: 0, load: 35 });
+    bat_voltage: 24, bat_current: 0, power_out: 0, load: 35,
+    vibration: 0, oil_pressure: 0 });
 
   loadChartHistory();
   loadThresholds();

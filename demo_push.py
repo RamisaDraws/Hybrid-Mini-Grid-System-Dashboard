@@ -41,10 +41,13 @@ while True:
         gv, gc, gp = 220, 182, 40
         grpm, gfreq = 1500, 50.0
         gtemp, gcool = 120, 90
+        goil = 45 + 5 * wave2      # Oil pressure: ~40–50 PSI
+        gvib = 12 + 3 * wave       # Vibration: ~9–15 mm/s
     else:
         gv, gc, gp = 0, 0, 0
         grpm, gfreq = 0, 0
         gtemp, gcool = 0, 0
+        goil, gvib = 0, 0
 
     payload = {
         # Solar
@@ -70,6 +73,8 @@ while True:
         "water_pct": 55,
         "bat_voltage": 24,
         "bat_current": 18 if gen_running else 0,
+        "oil_pressure": round(goil, 1),
+        "vibration": round(gvib, 1),
     }
 
     # Override hydro voltage/current/power from the hydro-specific keys
