@@ -32,6 +32,33 @@ async function doLogout() {
   tick(); setInterval(tick, 1000);
 })();
 
+/* ── Alert audio ── */
+let _prevAlertCount = -1;
+
+function playAlertBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
+  } catch (e) {}
+}
+
+function checkAlertSound(alerts) {
+  const count = (alerts || []).length;
+  if (_prevAlertCount >= 0 && count > _prevAlertCount) {
+    playAlertBeep();
+  }
+  _prevAlertCount = count;
+}
+
 /* ── Hamburger ── */
 const hamburgerBtn = document.getElementById('hamburger-btn');
 const mobileNav    = document.getElementById('mobile-nav');
@@ -317,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
     vibration: 0, oil_pressure: 0 });
 
   loadChartHistory();
-  loadThresholds();
+  
   loadAlertDates();
 });
 
@@ -341,36 +368,10 @@ setInterval(async () => {
     const sel = document.getElementById('alert-date-select');
     const today = new Date().toISOString().slice(0, 10);
     if (!sel || sel.value === today) {
+      checkAlertSound(d.alerts);
       renderAlerts(d.alerts || []);
     }
   } catch (e) { console.warn('Bridge not connected:', e.message); }
 }, 2000);
 
-/* ── Thresholds ── */
-async function loadThresholds() {
-  try {
-    const res = await fetch('/api/thresholds/generator');
-    if (handleAuthError(res)) return;
-    const t = await res.json();
-    Object.keys(t).forEach(k => {
-      const el = document.getElementById('thresh-' + k);
-      if (el) el.value = t[k];
-    });
-  } catch (e) {}
-}
-
-async function saveThresholds() {
-  const payload = {};
-  document.querySelectorAll('.threshold-input').forEach(el => {
-    payload[el.id.replace('thresh-', '')] = parseFloat(el.value) || 0;
-  });
-  try {
-    const res = await fetch('/api/thresholds/generator', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    if (handleAuthError(res)) return;
-    const btn = document.getElementById('thresh-save-btn');
-    if (btn) { btn.textContent = 'Saved ✓'; setTimeout(() => btn.textContent = 'Save Thresholds', 1500); }
-  } catch (e) {}
-}
+/* ── Thresholds ── * removed since simulink already got the logic*/

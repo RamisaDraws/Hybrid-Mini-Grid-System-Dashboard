@@ -38,10 +38,44 @@ _gen = {
     "gen_temp": 0, "coolant_temp": 0,
     "fuel_pct": 72, "water_pct": 55,
     "bat_voltage": 24, "bat_current": 0,
-    "oil_pressure": 0, "vibration": 0
+    "oil_pressure": 0, "vibration": 0,
+    "fault_voltage": 0, "fault_rpm": 0, "fault_coolant": 0,
+    "fault_fuel": 0, "fault_water": 0, "fault_bat_voltage": 0,
+    "fault_oil_pressure": 0, "fault_vibration": 0
 }
 
 _gen_pending = {"cmd": ""}
+
+# ── Prefixed key → (target dict field) mapping ───────────
+# Matches bridge.py / demo_push.py prefixed keys
+_SOLAR_PREFIX = {
+    "solar_voltage": "voltage", "solar_current": "current",
+    "solar_power": "power_out", "solar_load": "load",
+    "solar_soc": "soc", "solar_charging": "charging",
+    "solar_temp_panel": "temp_panel", "solar_temp_module": "temp_module",
+}
+
+_HYDRO_PREFIX = {
+    "hydro_voltage": "voltage", "hydro_current": "current",
+    "hydro_power": "power_out", "hydro_load": "load",
+    "hydro_flow_rate": "flow_rate", "hydro_pressure": "pressure",
+    "hydro_pump_state": "pump_state",
+}
+
+_GEN_PREFIX = {
+    "gen_running": "running",
+    "gen_voltage": "voltage", "gen_current": "current",
+    "gen_power": "power_out", "gen_load": "load",
+    "gen_rpm": "rpm", "gen_frequency": "frequency",
+    "gen_temp": "gen_temp", "gen_coolant": "coolant_temp",
+    "gen_fuel": "fuel_pct", "gen_water": "water_pct",
+    "gen_bat_voltage": "bat_voltage", "gen_bat_current": "bat_current",
+    "gen_oil_pressure": "oil_pressure", "gen_vibration": "vibration",
+    "gen_fault_voltage": "fault_voltage", "gen_fault_rpm": "fault_rpm",
+    "gen_fault_coolant": "fault_coolant", "gen_fault_fuel": "fault_fuel",
+    "gen_fault_water": "fault_water", "gen_fault_bat_voltage": "fault_bat_voltage",
+    "gen_fault_oil_pressure": "fault_oil_pressure", "gen_fault_vibration": "fault_vibration",
+}
 
 # ── Chart history (server-side rolling arrays for tab-switch persistence) ─
 _chart_history = {
@@ -66,16 +100,7 @@ _thresholds = {
         "pressure_high": 60, "pressure_low": 30,
         "voltage_high": 250, "voltage_low": 190
     },
-    "generator": {
-        "voltage_high": 250, "voltage_low": 190,
-        "rpm_high": 1800, "rpm_low": 1200,
-        "coolant_high": 110, "coolant_low": 0,
-        "fuel_high": 100, "fuel_low": 15,
-        "water_high": 100, "water_low": 15,
-        "bat_voltage_high": 30, "bat_voltage_low": 20,
-        "oil_pressure_high": 70, "oil_pressure_low": 15,
-        "vibration_high": 45, "vibration_low": 0
-    }
+    "generator": {}
 }
 
 # ── Alert dedup: tracks which conditions are currently active ─
@@ -201,24 +226,28 @@ def _generate_alerts():
     _check_state_change("pump_state", _hydro["pump_state"],
                         "Pump started — running", "Pump stopped", "hydro")
 
-    # Generator
-    if _gen["running"]:
-        _check_range_dedup("generator", "Generator Voltage", _gen["voltage"],
-                           "voltage_high", "voltage_low")
-        _check_range_dedup("generator", "Engine RPM", _gen["rpm"],
-                           "rpm_high", "rpm_low")
-        _check_range_dedup("generator", "Coolant Temp", _gen["coolant_temp"],
-                           "coolant_high", "coolant_low")
-        _check_range_dedup("generator", "Fuel Level", _gen["fuel_pct"],
-                           "fuel_high", "fuel_low")
-        _check_range_dedup("generator", "Water Level", _gen["water_pct"],
-                           "water_high", "water_low")
-        _check_range_dedup("generator", "Battery Voltage", _gen["bat_voltage"],
-                           "bat_voltage_high", "bat_voltage_low")
-        _check_range_dedup("generator", "Oil Pressure", _gen["oil_pressure"],
-                           "oil_pressure_high", "oil_pressure_low")
-        _check_range_dedup("generator", "Vibration", _gen["vibration"],
-                           "vibration_high", "vibration_low")
+    # Generator — binary fault flags from Simulink
+    _gen_fault_map = {
+        "fault_voltage":      ("Generator Voltage",  _gen["voltage"],      "V"),
+        "fault_rpm":          ("Engine RPM",          _gen["rpm"],          "RPM"),
+        "fault_coolant":      ("Coolant Temp",        _gen["coolant_temp"], "°C"),
+        "fault_fuel":         ("Fuel Level",          _gen["fuel_pct"],     "%"),
+        "fault_water":        ("Water Level",         _gen["water_pct"],    "%"),
+        "fault_bat_voltage":  ("Battery Voltage",     _gen["bat_voltage"],  "V"),
+        "fault_oil_pressure": ("Oil Pressure",        _gen["oil_pressure"], "PSI"),
+        "fault_vibration":    ("Vibration",           _gen["vibration"],    "mm/s"),
+    }
+    for fault_key, (label, value, unit) in _gen_fault_map.items():
+        cond_key = f"generator:{fault_key}"
+        is_fault = bool(_gen.get(fault_key, 0))
+        was_fault = _active_conditions.get(cond_key, False)
+        if is_fault and not was_fault:
+            _add_alert("generator", f"{label} abnormal — {value:.1f} {unit}", "warn")
+            _active_conditions[cond_key] = True
+        elif not is_fault and was_fault:
+            _add_alert("generator", f"{label} returned to normal — {value:.1f} {unit}", "info")
+            _active_conditions[cond_key] = False
+
     _check_state_change("gen_running", _gen["running"],
                         "Generator started", "Generator stopped", "generator")
 
@@ -295,35 +324,41 @@ def serve_index():
 
 @app.route('/<path:filename>')
 def serve_static(filename):
-    # CSS/JS/images/fonts: no auth needed (login page needs them)
     if filename.endswith(('.css', '.js', '.png', '.jpg', '.svg', '.ico',
                           '.woff2', '.woff', '.ttf')):
         return send_from_directory('.', filename)
     if filename == 'login.html':
         return send_from_directory('.', filename)
-    # HTML pages require auth
     if filename.endswith('.html'):
         if not session.get('logged_in'):
             return redirect('/login.html')
     return send_from_directory('.', filename)
 
 # ══════════════════════════════════════════════════════════
-#  API — DATA UPDATE (bridge.py pushes here)
+#  API — DATA UPDATE (bridge.py / demo_push.py pushes here)
 # ══════════════════════════════════════════════════════════
 @app.route('/api/update', methods=['POST'])
 def api_update():
     global _chart_update_counter
     data = request.json or {}
     with _lock:
-        for k in _solar:
-            if k in data:
-                _solar[k] = data[k]
-        for k in _hydro:
-            if k in data:
-                _hydro[k] = data[k]
-        for k in _gen:
-            if k in data:
-                _gen[k] = data[k]
+        # Map prefixed keys to the correct subsystem dict
+        for prefixed_key, field in _SOLAR_PREFIX.items():
+            if prefixed_key in data:
+                _solar[field] = data[prefixed_key]
+
+        for prefixed_key, field in _HYDRO_PREFIX.items():
+            if prefixed_key in data:
+                _hydro[field] = data[prefixed_key]
+
+        for prefixed_key, field in _GEN_PREFIX.items():
+            if prefixed_key in data:
+                _gen[field] = data[prefixed_key]
+
+        # Also accept "running" without prefix (backward compat)
+        if "running" in data and "gen_running" not in data:
+            _gen["running"] = data["running"]
+
         _generate_alerts()
         _chart_update_counter += 1
         if _chart_update_counter % 3 == 0:

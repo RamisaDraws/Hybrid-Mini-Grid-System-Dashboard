@@ -38,48 +38,71 @@ while True:
 
     # ── Generator signals (only meaningful when running) ──
     if gen_running:
-        gv, gc, gp = 220, 182, 40
-        grpm, gfreq = 1500, 50.0
-        gtemp, gcool = 120, 90
-        goil = 45 + 5 * wave2      # Oil pressure: ~40–50 PSI
-        gvib = 12 + 3 * wave       # Vibration: ~9–15 mm/s
+        gv = round(220 + 2 * wave, 1)
+        gc = round(182 + 3 * wave2, 1)
+        gp = round(40 + 3 * wave, 1)
+        gl = round(35 + 5 * wave2, 1)
+        grpm = round(1500 + 20 * wave)
+        gfreq = round(50.0 + 0.5 * wave, 1)
+        gtemp = round(120 + 5 * wave, 1)
+        gcool = round(90 + 3 * wave2, 1)
+        goil = round(45 + 5 * wave2, 1)
+        gvib = round(12 + 3 * wave, 1)
+        gbat_cur = 18
     else:
-        gv, gc, gp = 0, 0, 0
+        gv, gc, gp, gl = 0, 0, 0, 0
         grpm, gfreq = 0, 0
         gtemp, gcool = 0, 0
         goil, gvib = 0, 0
+        gbat_cur = 0
 
     payload = {
-        # Solar
-        "voltage": round(218 + 4 * wave, 1),
-        "current": round(89 + 3 * wave2, 1),
-        "power_out": round(solar_power, 1),
-        "load": round(solar_load, 1),
-        "soc": round(max(0, min(100, 65 + 10 * wave))),
-        "charging": 1 if wave > -0.3 else 0,
-        "temp_panel": round(40 + 5 * wave, 1),
-        "temp_module": round(46 + 4 * wave2, 1),
-        # Hydro
-        "flow_rate": round(0.57 + 0.03 * wave, 3),
-        "pressure": round(52 + 3 * wave2, 1),
-        "pump_state": 1,
-        # Generator
-        "running": gen_running,
-        "rpm": grpm,
-        "frequency": gfreq,
-        "gen_temp": gtemp,
-        "coolant_temp": gcool,
-        "fuel_pct": max(0, 72 - tick * 0.01),
-        "water_pct": 55,
-        "bat_voltage": 24,
-        "bat_current": 18 if gen_running else 0,
-        "oil_pressure": round(goil, 1),
-        "vibration": round(gvib, 1),
-    }
+        # ── Solar (prefixed) ──
+        "solar_voltage":     round(218 + 4 * wave, 1),
+        "solar_current":     round(89 + 3 * wave2, 1),
+        "solar_power":       round(solar_power, 1),
+        "solar_load":        round(solar_load, 1),
+        "solar_soc":         round(max(0, min(100, 65 + 10 * wave))),
+        "solar_charging":    1 if wave > -0.3 else 0,
+        "solar_temp_panel":  round(40 + 5 * wave, 1),
+        "solar_temp_module": round(46 + 4 * wave2, 1),
 
-    # Override hydro voltage/current/power from the hydro-specific keys
-    payload["voltage"] = round(218 + 4 * wave, 1)     # last write wins — solar page uses this
-    payload["current"] = round(89 + 3 * wave2, 1)
+        # ── Hydro (prefixed) ──
+        "hydro_voltage":     round(230 + 3 * wave, 1),
+        "hydro_current":     round(120 + 5 * wave2, 1),
+        "hydro_power":       round(hydro_power, 1),
+        "hydro_load":        round(hydro_load, 1),
+        "hydro_flow_rate":   round(0.57 + 0.03 * wave, 3),
+        "hydro_pressure":    round(52 + 3 * wave2, 1),
+        "hydro_pump_state":  1,
+
+        # ── Generator (prefixed) ──
+        "running":           gen_running,
+        "gen_voltage":       gv,
+        "gen_current":       gc,
+        "gen_power":         gp,
+        "gen_load":          gl,
+        "gen_rpm":           grpm,
+        "gen_frequency":     gfreq,
+        "gen_temp":          gtemp,
+        "gen_coolant":       gcool,
+        "gen_fuel":          max(0, round(72 - tick * 0.01, 1)),
+        "gen_water":         55,
+        "gen_bat_voltage":   24,
+        "gen_bat_current":   gbat_cur,
+        "gen_oil_pressure":  goil,
+        "gen_vibration":     gvib,
+
+        # ── Generator fault flags (periodic faults when running) ──
+        "gen_fault_voltage":      1 if (tick % 60 > 45 and gen_running) else 0,
+        "gen_fault_rpm":          1 if (tick % 80 > 70 and gen_running) else 0,
+        "gen_fault_coolant":      1 if (tick % 100 > 85 and gen_running) else 0,
+        "gen_fault_fuel":         1 if (tick % 90 > 75 and gen_running) else 0,
+        "gen_fault_water":        0,
+        "gen_fault_bat_voltage":  0,
+        "gen_fault_oil_pressure": 1 if (tick % 70 > 60 and gen_running) else 0,
+        "gen_fault_vibration":    1 if (tick % 50 > 40 and gen_running) else 0,
+    }
 
     try:
         requests.post(f"{SERVER}/api/update", json=payload, timeout=3)
@@ -96,7 +119,15 @@ while True:
         pass
 
     if tick % 10 == 0:
-        print(f"  tick={tick}  solar_pwr={solar_power:.1f}  hydro_pwr={hydro_power:.1f}  gen={'ON' if gen_running else 'OFF'}")
+        faults = []
+        if payload.get("gen_fault_voltage"):      faults.append("V")
+        if payload.get("gen_fault_rpm"):           faults.append("RPM")
+        if payload.get("gen_fault_coolant"):       faults.append("COOL")
+        if payload.get("gen_fault_fuel"):          faults.append("FUEL")
+        if payload.get("gen_fault_oil_pressure"):  faults.append("OIL")
+        if payload.get("gen_fault_vibration"):     faults.append("VIB")
+        fault_str = f"  faults=[{','.join(faults)}]" if faults else ""
+        print(f"  tick={tick}  solar_pwr={solar_power:.1f}  hydro_pwr={hydro_power:.1f}  gen={'ON' if gen_running else 'OFF'}{fault_str}")
 
     tick += 1
     time.sleep(POLL)

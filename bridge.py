@@ -61,6 +61,15 @@ GEN_VARS = {
     "gen_bat_current":   "bat_current",
     "gen_oil_pressure":  "oil_pressure",
     "gen_vibration":     "vibration",
+    # Fault flags from Simulink fault detection
+    "gen_fault_voltage":      "fault_voltage",
+    "gen_fault_rpm":          "fault_rpm",
+    "gen_fault_coolant":      "fault_coolant",
+    "gen_fault_fuel":         "fault_fuel",
+    "gen_fault_water":        "fault_water",
+    "gen_fault_bat_voltage":  "fault_bat_voltage",
+    "gen_fault_oil_pressure": "fault_oil_pressure",
+    "gen_fault_vibration":    "fault_vibration",
 }
 
 # Generator state (toggle)
