@@ -17,6 +17,23 @@
      opened directly as a file:// URL due to browser security restrictions.
    ════════════════════════════════════════════════ */
 
+/* ── Theme sync from parent (index.html) ── */
+function applyThemeFromParent(theme) {
+  if (theme === 'light') document.body.classList.add('light');
+  else document.body.classList.remove('light');
+}
+// Listen for theme change messages from parent
+window.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'themeChange') {
+    applyThemeFromParent(e.data.theme);
+  }
+});
+// On load, check parent's stored theme
+try {
+  const saved = localStorage.getItem('karazhar-theme');
+  if (saved) applyThemeFromParent(saved);
+} catch (e) {}
+
 const hotspots   = Array.from(document.querySelectorAll('.hotspot-layer'));
 const legendItems = document.querySelectorAll('.legend-item');
 const container   = document.getElementById('mapContainer');

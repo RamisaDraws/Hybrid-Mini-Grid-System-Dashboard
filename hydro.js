@@ -3,6 +3,27 @@
    Karazhar Minigrid — In-Pipe Hydro Page (Live)
    ════════════════════════════════════════════════ */
 
+/* ── Theme ── */
+function getTheme() { return localStorage.getItem('karazhar-theme') || 'dark'; }
+function applyTheme(theme) {
+  if (theme === 'light') document.body.classList.add('light');
+  else document.body.classList.remove('light');
+  localStorage.setItem('karazhar-theme', theme);
+}
+function toggleTheme() {
+  applyTheme(getTheme() === 'dark' ? 'light' : 'dark');
+  const hc = getHydroColor();
+  drawGauge(document.getElementById('gauge-pressure'), parseFloat(document.getElementById('pressure-val').textContent) || 0, 0, 64, hc);
+  drawGauge(document.getElementById('gauge-voltage'), parseFloat(document.getElementById('voltage-val').textContent) || 0, 0, 440, hc);
+  drawGauge(document.getElementById('gauge-current'), parseFloat(document.getElementById('current-val').textContent) || 0, 0, 300, hc);
+  if (flowChart) { flowChart.destroy(); flowChart = null; }
+  if (dualChart) { dualChart.destroy(); dualChart = null; }
+  initHydroCharts();
+}
+function isLight() { return document.body.classList.contains('light'); }
+function getHydroColor() { return getComputedStyle(document.body).getPropertyValue('--hydro').trim(); }
+applyTheme(getTheme());
+
 /* ── Auth ── */
 function handleAuthError(res) {
   if (res.status === 401) { window.location.href = '/login.html'; return true; }
@@ -31,22 +52,27 @@ async function doLogout() {
   tick(); setInterval(tick, 1000);
 })();
 
-/* ── Alert audio ── */
+/* ── Alert audio (MP3-based, mobile-safe) ── */
 let _prevAlertCount = -1;
+const _alertAudio = new Audio('audio/alert_beep.mp3');
+_alertAudio.volume = 0.4;
+let _audioUnlocked = false;
+
+function _unlockAudio() {
+  if (_audioUnlocked) return;
+  _alertAudio.play().then(() => {
+    _alertAudio.pause();
+    _alertAudio.currentTime = 0;
+    _audioUnlocked = true;
+  }).catch(() => {});
+}
+document.addEventListener('click', _unlockAudio, { once: false });
+document.addEventListener('touchstart', _unlockAudio, { once: false });
 
 function playAlertBeep() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.value = 880;
-    gain.gain.setValueAtTime(0.18, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.3);
+    _alertAudio.currentTime = 0;
+    _alertAudio.play().catch(() => {});
   } catch (e) {}
 }
 
@@ -79,28 +105,33 @@ async function fetchWeather() {
 fetchWeather(); setInterval(fetchWeather, 600000);
 
 /* ── Chart options ── */
-const CHART_OPTS = {
-  responsive: true, maintainAspectRatio: false, animation: false,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      backgroundColor: '#1f1f1f', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
-      titleColor: '#888', bodyColor: '#e8e8e8',
-      titleFont: { family: 'JetBrains Mono', size: 10 },
-      bodyFont: { family: 'JetBrains Mono', size: 11 },
-      padding: 8, displayColors: true,
-      callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toFixed(2)}` }
+function getChartOpts() {
+  const s = getComputedStyle(document.body);
+  return {
+    responsive: true, maintainAspectRatio: false, animation: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: s.getPropertyValue('--chart-tooltip-bg').trim(),
+        borderColor: s.getPropertyValue('--chart-tooltip-border').trim(), borderWidth: 1,
+        titleColor: s.getPropertyValue('--chart-tooltip-title').trim(),
+        bodyColor: s.getPropertyValue('--chart-tooltip-body').trim(),
+        titleFont: { family: 'JetBrains Mono', size: 12 },
+        bodyFont: { family: 'JetBrains Mono', size: 13 },
+        padding: 8, displayColors: true,
+        callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toFixed(2)}` }
+      }
+    },
+    scales: {
+      x: { grid: { color: s.getPropertyValue('--chart-grid').trim(), drawBorder: false },
+           ticks: { color: s.getPropertyValue('--chart-tick').trim(), font: { family: 'JetBrains Mono', size: 11 }, maxTicksLimit: 8 },
+           border: { display: false } },
+      y: { grid: { color: s.getPropertyValue('--chart-grid').trim(), drawBorder: false },
+           ticks: { color: s.getPropertyValue('--chart-tick').trim(), font: { family: 'JetBrains Mono', size: 11 }, maxTicksLimit: 5 },
+           border: { display: false } }
     }
-  },
-  scales: {
-    x: { grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
-         ticks: { color: '#444', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 8 },
-         border: { display: false } },
-    y: { grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
-         ticks: { color: '#444', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 5 },
-         border: { display: false } }
-  }
-};
+  };
+}
 
 const chartLabels = Array.from({ length: 16 }, () => '--:--');
 
@@ -109,14 +140,18 @@ function drawGauge(el, value, min, max, color) {
   const c = el.getContext('2d');
   const W = el.width, H = el.height;
   const cx = W/2, cy = H-25, r = Math.min(W/2, H)-14, lw = 12;
+  const s = getComputedStyle(document.body);
+  const trackColor = s.getPropertyValue('--gauge-track').trim();
+  const tickColor = s.getPropertyValue('--gauge-tick').trim();
+  const labelColor = s.getPropertyValue('--gauge-label').trim();
   c.clearRect(0, 0, W, H);
   c.beginPath(); c.arc(cx, cy, r, Math.PI, 0, false);
-  c.strokeStyle = 'rgba(255,255,255,0.06)'; c.lineWidth = lw; c.lineCap = 'round'; c.stroke();
+  c.strokeStyle = trackColor; c.lineWidth = lw; c.lineCap = 'round'; c.stroke();
   const frac = Math.max(0, Math.min(1, (value-min)/(max-min)));
   c.beginPath(); c.arc(cx, cy, r, Math.PI, Math.PI + frac*Math.PI, false);
   c.strokeStyle = color; c.lineWidth = lw; c.lineCap = 'round';
   c.shadowColor = color; c.shadowBlur = 10; c.stroke(); c.shadowBlur = 0;
-  c.strokeStyle = 'rgba(255,255,255,0.1)'; c.lineWidth = 1;
+  c.strokeStyle = tickColor; c.lineWidth = 1;
   for (let i = 0; i <= 10; i++) {
     const a = Math.PI + (i/10)*Math.PI;
     c.beginPath();
@@ -124,7 +159,7 @@ function drawGauge(el, value, min, max, color) {
     c.lineTo(cx+(r+lw/2+2)*Math.cos(a), cy+(r+lw/2+2)*Math.sin(a));
     c.stroke();
   }
-  c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '11px JetBrains Mono';
+  c.fillStyle = labelColor; c.font = '13px JetBrains Mono';
   c.textAlign = 'left'; c.fillText(min, cx-r-2, cy+25);
   c.textAlign = 'right'; c.fillText(max, cx+r+8, cy+25);
 }
@@ -215,53 +250,60 @@ async function loadChartHistory() {
 }
 
 /* ── Init ── */
-document.addEventListener('DOMContentLoaded', () => {
-  // Flow rate chart
+function initHydroCharts() {
+  const hc = getHydroColor();
+  const gc = getComputedStyle(document.body).getPropertyValue('--gen').trim();
+  const CHART_OPTS = getChartOpts();
+
   const flowCtx = document.getElementById('chart-flow-rate');
-  if (flowCtx) {
+  if (flowCtx && !flowChart) {
     const c = flowCtx.getContext('2d');
     const g = c.createLinearGradient(0, 0, 0, 130);
-    g.addColorStop(0, 'rgba(62,207,207,0.28)'); g.addColorStop(1, 'rgba(62,207,207,0)');
+    g.addColorStop(0, hc + '48'); g.addColorStop(1, hc + '00');
     flowChart = new Chart(c, {
       type: 'line',
       data: { labels: chartLabels,
-        datasets: [{ label: 'Flow Rate (m³/s)', data: flowData, borderColor: '#3ecfcf', borderWidth: 2,
+        datasets: [{ label: 'Flow Rate (m³/s)', data: flowData, borderColor: hc, borderWidth: 2,
           backgroundColor: g, fill: true, tension: 0.45, pointRadius: 0,
-          pointHoverRadius: 4, pointHoverBackgroundColor: '#3ecfcf',
-          pointHoverBorderColor: '#0a0a0a', pointHoverBorderWidth: 2 }] },
+          pointHoverRadius: 4, pointHoverBackgroundColor: hc,
+          pointHoverBorderColor: isLight() ? '#ffffff' : '#0a0a0a', pointHoverBorderWidth: 2 }] },
       options: { ...CHART_OPTS, scales: { ...CHART_OPTS.scales,
         y: { ...CHART_OPTS.scales.y, min: 0.3, max: 0.8 } } }
     });
   }
 
-  // Power vs Load chart
   const dualCtx = document.getElementById('chart-hydro-dual');
-  if (dualCtx) {
+  if (dualCtx && !dualChart) {
     const c = dualCtx.getContext('2d');
     const gP = c.createLinearGradient(0, 0, 0, 220);
-    gP.addColorStop(0, 'rgba(62,207,207,0.28)'); gP.addColorStop(1, 'rgba(62,207,207,0)');
+    gP.addColorStop(0, hc + '48'); gP.addColorStop(1, hc + '00');
     const gL = c.createLinearGradient(0, 0, 0, 220);
-    gL.addColorStop(0, 'rgba(255,107,107,0.18)'); gL.addColorStop(1, 'rgba(255,107,107,0)');
+    gL.addColorStop(0, gc + '30'); gL.addColorStop(1, gc + '00');
     dualChart = new Chart(c, {
       type: 'line',
       data: { labels: chartLabels,
         datasets: [
-          { label: 'Power Out (kW)', data: powerData, borderColor: '#3ecfcf', borderWidth: 2,
+          { label: 'Power Out (kW)', data: powerData, borderColor: hc, borderWidth: 2,
             backgroundColor: gP, fill: true, tension: 0.45, pointRadius: 0,
-            pointHoverRadius: 4, pointHoverBackgroundColor: '#3ecfcf',
-            pointHoverBorderColor: '#0a0a0a', pointHoverBorderWidth: 2 },
-          { label: 'Load (kW)', data: loadData, borderColor: '#ff6b6b', borderWidth: 1.5,
+            pointHoverRadius: 4, pointHoverBackgroundColor: hc,
+            pointHoverBorderColor: isLight() ? '#ffffff' : '#0a0a0a', pointHoverBorderWidth: 2 },
+          { label: 'Load (kW)', data: loadData, borderColor: gc, borderWidth: 1.5,
             borderDash: [5, 3], backgroundColor: gL, fill: true, tension: 0.45,
-            pointRadius: 0, pointHoverRadius: 4, pointHoverBackgroundColor: '#ff6b6b',
-            pointHoverBorderColor: '#0a0a0a', pointHoverBorderWidth: 2 }
+            pointRadius: 0, pointHoverRadius: 4, pointHoverBackgroundColor: gc,
+            pointHoverBorderColor: isLight() ? '#ffffff' : '#0a0a0a', pointHoverBorderWidth: 2 }
         ] },
       options: CHART_OPTS
     });
   }
+}
 
-  drawGauge(document.getElementById('gauge-pressure'), 0, 0, 64, '#3ecfcf');
-  drawGauge(document.getElementById('gauge-voltage'), 0, 0, 440, '#3ecfcf');
-  drawGauge(document.getElementById('gauge-current'), 0, 0, 300, '#3ecfcf');
+document.addEventListener('DOMContentLoaded', () => {
+  initHydroCharts();
+
+  const hc = getHydroColor();
+  drawGauge(document.getElementById('gauge-pressure'), 0, 0, 64, hc);
+  drawGauge(document.getElementById('gauge-voltage'), 0, 0, 440, hc);
+  drawGauge(document.getElementById('gauge-current'), 0, 0, 300, hc);
 
   loadChartHistory();
   loadThresholds();
@@ -276,9 +318,10 @@ setInterval(async () => {
     if (handleAuthError(res)) return;
     const d = await res.json();
 
-    drawGauge(document.getElementById('gauge-pressure'), d.pressure, 0, 64, '#3ecfcf');
-    drawGauge(document.getElementById('gauge-voltage'), d.voltage, 0, 440, '#3ecfcf');
-    drawGauge(document.getElementById('gauge-current'), d.current, 0, 300, '#3ecfcf');
+    const hc = getHydroColor();
+    drawGauge(document.getElementById('gauge-pressure'), d.pressure, 0, 64, hc);
+    drawGauge(document.getElementById('gauge-voltage'), d.voltage, 0, 440, hc);
+    drawGauge(document.getElementById('gauge-current'), d.current, 0, 300, hc);
 
     document.getElementById('pressure-val').textContent = Number(d.pressure).toFixed(1);
     document.getElementById('voltage-val').textContent = Number(d.voltage).toFixed(1);

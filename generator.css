@@ -73,7 +73,7 @@
 
 .gen-control-label {
   font-family: 'Syne', sans-serif;
-  font-size: 0.62rem;
+  font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -115,7 +115,7 @@
 
 .gen-status-text {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 500;
   letter-spacing: 0.1em;
   color: var(--gen);
@@ -136,7 +136,7 @@
   background: rgba(255, 107, 107, 0.1);
   color: var(--gen);
   font-family: 'Syne', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   cursor: pointer;
@@ -159,11 +159,56 @@
 }
 
 .gen-control-note {
-  font-size: 0.6rem;
+  font-size: 0.8rem;
   color: var(--text-dim);
   letter-spacing: 0.04em;
   text-align: center;
   line-height: 1.4;
+}
+
+/* ── Generator mode indicator ── */
+.gen-mode-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  justify-content: center;
+}
+
+.gen-mode-label {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-family: 'Syne', sans-serif;
+  font-weight: 600;
+}
+
+.gen-mode-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
+}
+
+.gen-mode-badge.auto {
+  background: rgba(0, 229, 160, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(0, 229, 160, 0.25);
+}
+
+.gen-mode-badge.manual {
+  background: rgba(245, 200, 66, 0.12);
+  color: var(--solar);
+  border: 1px solid rgba(245, 200, 66, 0.25);
+}
+
+/* Disabled generator button (auto mode) */
+.gen-toggle-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* ── Generator image card ── */
@@ -205,14 +250,14 @@
 
 .gen-image-placeholder span {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   color: var(--gen);
   letter-spacing: 0.14em;
   opacity: 0.5;
 }
 
 .gen-image-placeholder .placeholder-sub {
-  font-size: 0.62rem;
+  font-size: 0.82rem;
   color: var(--text-dim);
   letter-spacing: 0.05em;
   opacity: 1;
@@ -230,7 +275,7 @@
 
 .gen-image-label {
   font-family: 'Syne', sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -242,7 +287,7 @@
   align-items: center;
   gap: 0.35rem;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   color: var(--gen);
   background: var(--gen-dim);
   border: 1px solid rgba(255, 107, 107, 0.2);
@@ -290,7 +335,7 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.65rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
   letter-spacing: 0.04em;
 }
@@ -324,7 +369,7 @@
 
 .gauge-card-label {
   font-family: 'Syne', sans-serif;
-  font-size: 0.62rem;
+  font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -366,7 +411,7 @@
 }
 
 .gauge-subtext {
-  font-size: 0.62rem;
+  font-size: 0.82rem;
   color: var(--text-dim);
   letter-spacing: 0.05em;
 }
@@ -399,7 +444,7 @@
 
 .vbar-label {
   font-family: 'Syne', sans-serif;
-  font-size: 0.58rem;
+  font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -444,7 +489,7 @@
 
 .vbar-unit {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.85rem;
   color: var(--gen);
   letter-spacing: 0.02em;
 }
@@ -476,7 +521,7 @@
 
 .ats-label {
   font-family: 'Syne', sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -526,14 +571,14 @@
 
 .ats-source-label {
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
   text-align: center;
 }
 
 .ats-source-badge {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.58rem;
+  font-size: 0.68rem;
   font-weight: 500;
   letter-spacing: 0.1em;
   padding: 0.15rem 0.45rem;
@@ -574,7 +619,7 @@
 }
 
 .ats-meta-label {
-  font-size: 0.62rem;
+  font-size: 0.82rem;
   color: var(--text-dim);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -582,7 +627,7 @@
 
 .ats-meta-val {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   color: var(--text);
 }
 
@@ -714,14 +759,14 @@
   }
 
   .gauge-unit {
-    font-size: 0.55rem;
+    font-size: 0.65rem;
     letter-spacing: 0.04em;
     white-space: nowrap;
     text-overflow: ellipsis;
   }
 
   .gauge-subtext {
-    font-size: 0.55rem;
+    font-size: 0.65rem;
     text-align: center;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -734,7 +779,7 @@
   }
 
   .vbar-label {
-    font-size: 0.5rem;
+    font-size: 0.6rem;
     letter-spacing: 0.06em;
   }
 
@@ -743,7 +788,7 @@
   }
 
   .vbar-unit {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
   }
 
   /* Chart header stack */
@@ -791,7 +836,7 @@
   }
 
   .gauge-unit {
-    font-size: 0.48rem;
+    font-size: 0.58rem;
   }
 
   .vbar-track {
@@ -800,11 +845,11 @@
   }
 
   .vbar-label {
-    font-size: 0.45rem;
+    font-size: 0.65rem;
   }
 
   .vbar-value {
-    font-size: 0.65rem;
+    font-size: 0.85rem;
   }
 
   .ats-icon {
@@ -813,10 +858,27 @@
   }
 
   .ats-source-label {
-    font-size: 0.58rem;
+    font-size: 0.68rem;
   }
 
   .ats-source-badge {
-    font-size: 0.5rem;
+    font-size: 0.6rem;
   }
+}
+/* ── Light mode card shadows ── */
+body.light .gen-control-card,
+body.light .gen-image-card,
+body.light .gen-chart-card,
+body.light .gauge-card,
+body.light .bar-group-card,
+body.light .ats-card,
+body.light .gen-alerts {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+body.light .gen-image-inner {
+  background: #f0e8e8;
+}
+body.light .gen-image-placeholder {
+  background: linear-gradient(135deg, #f2eaea 0%, #ecdada 60%, #f2eaea 100%);
 }

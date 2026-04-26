@@ -15,6 +15,18 @@
     --card-bg:   #111c2b;
 }
 
+/* Light mode */
+body.light {
+    --bg:        #f4f6f9;
+    --surface:   #ffffff;
+    --border:    rgba(0,0,0,0.1);
+    --accent:    #00b880;
+    --accent2:   #e04545;
+    --text:      #1a1a2e;
+    --muted:     #5a6275;
+    --card-bg:   #f0f2f5;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -48,7 +60,7 @@ body {
 .site-header h1 span { color: var(--accent); }
 
 .header-tag {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     letter-spacing: 0.15em;
     color: var(--muted);
     text-transform: uppercase;
@@ -147,13 +159,13 @@ body {
 .modal-title {
     font-family: 'Syne', sans-serif;
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     display: flex;
     align-items: center;
     gap: 0.6rem;
 }
 .modal-title .type-badge {
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     padding: 0.2rem 0.6rem;
@@ -170,7 +182,7 @@ body {
 
 .modal-body { padding: 1.5rem; }
 .modal-body p {
-    font-size: 0.9rem;
+    font-size: 1rem;
     line-height: 1.7;
     color: var(--text);
     margin-bottom: 1rem;
@@ -187,11 +199,11 @@ body {
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 0.6rem 0.8rem;
-    font-size: 0.78rem;
+    font-size: 0.88rem;
 }
 .info-chip .chip-label {
     color: var(--muted);
-    font-size: 0.68rem;
+    font-size: 0.88rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     display: block;
@@ -207,7 +219,7 @@ body {
     align-items: center;
     gap: 0.4rem;
     color: var(--accent);
-    font-size: 0.82rem;
+    font-size: 0.92rem;
     text-decoration: none;
     border-bottom: 1px solid rgba(0,229,160,0.3);
     padding-bottom: 1px;
@@ -222,7 +234,7 @@ body {
     border-radius: 8px;
     color: var(--text);
     padding: 0.4rem 1rem;
-    font-size: 0.82rem;
+    font-size: 0.92rem;
     cursor: pointer;
     transition: background 0.2s, border-color 0.2s;
     font-family: 'DM Sans', sans-serif;

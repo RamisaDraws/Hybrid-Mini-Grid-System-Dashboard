@@ -4,6 +4,22 @@
    Bidirectional toggle + all gauges
    ════════════════════════════════════════════════ */
 
+/* ── Theme ── */
+function getTheme() { return localStorage.getItem('karazhar-theme') || 'dark'; }
+function applyTheme(theme) {
+  if (theme === 'light') document.body.classList.add('light');
+  else document.body.classList.remove('light');
+  localStorage.setItem('karazhar-theme', theme);
+}
+function toggleTheme() {
+  applyTheme(getTheme() === 'dark' ? 'light' : 'dark');
+  // Rebuild chart
+  if (dualChart) { dualChart.destroy(); dualChart = null; initGenChart(); }
+}
+function isLight() { return document.body.classList.contains('light'); }
+function getGenColor() { return getComputedStyle(document.body).getPropertyValue('--gen').trim(); }
+applyTheme(getTheme());
+
 /* ── Auth ── */
 function handleAuthError(res) {
   if (res.status === 401) { window.location.href = '/login.html'; return true; }
@@ -32,22 +48,27 @@ async function doLogout() {
   tick(); setInterval(tick, 1000);
 })();
 
-/* ── Alert audio ── */
+/* ── Alert audio (MP3-based, mobile-safe) ── */
 let _prevAlertCount = -1;
+const _alertAudio = new Audio('audio/alert_beep.mp3');
+_alertAudio.volume = 0.4;
+let _audioUnlocked = false;
+
+function _unlockAudio() {
+  if (_audioUnlocked) return;
+  _alertAudio.play().then(() => {
+    _alertAudio.pause();
+    _alertAudio.currentTime = 0;
+    _audioUnlocked = true;
+  }).catch(() => {});
+}
+document.addEventListener('click', _unlockAudio, { once: false });
+document.addEventListener('touchstart', _unlockAudio, { once: false });
 
 function playAlertBeep() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.value = 880;
-    gain.gain.setValueAtTime(0.18, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.3);
+    _alertAudio.currentTime = 0;
+    _alertAudio.play().catch(() => {});
   } catch (e) {}
 }
 
@@ -80,28 +101,33 @@ async function fetchWeather() {
 fetchWeather(); setInterval(fetchWeather, 600000);
 
 /* ── Chart options ── */
-const CHART_OPTS = {
-  responsive: true, maintainAspectRatio: false, animation: false,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      backgroundColor: '#1f1f1f', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
-      titleColor: '#888', bodyColor: '#e8e8e8',
-      titleFont: { family: 'JetBrains Mono', size: 10 },
-      bodyFont: { family: 'JetBrains Mono', size: 11 },
-      padding: 8, displayColors: true,
-      callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toFixed(1)} kW` }
+function getChartOpts() {
+  const s = getComputedStyle(document.body);
+  return {
+    responsive: true, maintainAspectRatio: false, animation: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: s.getPropertyValue('--chart-tooltip-bg').trim(),
+        borderColor: s.getPropertyValue('--chart-tooltip-border').trim(), borderWidth: 1,
+        titleColor: s.getPropertyValue('--chart-tooltip-title').trim(),
+        bodyColor: s.getPropertyValue('--chart-tooltip-body').trim(),
+        titleFont: { family: 'JetBrains Mono', size: 12 },
+        bodyFont: { family: 'JetBrains Mono', size: 13 },
+        padding: 8, displayColors: true,
+        callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toFixed(1)} kW` }
+      }
+    },
+    scales: {
+      x: { grid: { color: s.getPropertyValue('--chart-grid').trim(), drawBorder: false },
+           ticks: { color: s.getPropertyValue('--chart-tick').trim(), font: { family: 'JetBrains Mono', size: 11 }, maxTicksLimit: 8 },
+           border: { display: false } },
+      y: { grid: { color: s.getPropertyValue('--chart-grid').trim(), drawBorder: false },
+           ticks: { color: s.getPropertyValue('--chart-tick').trim(), font: { family: 'JetBrains Mono', size: 11 }, maxTicksLimit: 5 },
+           border: { display: false } }
     }
-  },
-  scales: {
-    x: { grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
-         ticks: { color: '#444', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 8 },
-         border: { display: false } },
-    y: { grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
-         ticks: { color: '#444', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 5 },
-         border: { display: false } }
-  }
-};
+  };
+}
 
 const chartLabels = Array.from({ length: 16 }, () => '--:--');
 
@@ -111,16 +137,20 @@ function drawGauge(el, value, min, max, color, isStandby) {
   const c = el.getContext('2d');
   const W = el.width, H = el.height;
   const cx = W/2, cy = H-25, r = Math.min(W/2, H)-14, lw = 12;
+  const s = getComputedStyle(document.body);
+  const trackColor = s.getPropertyValue('--gauge-track').trim();
+  const tickColor = s.getPropertyValue('--gauge-tick').trim();
+  const labelColor = s.getPropertyValue('--gauge-label').trim();
   c.clearRect(0, 0, W, H);
   c.beginPath(); c.arc(cx, cy, r, Math.PI, 0, false);
-  c.strokeStyle = 'rgba(255,255,255,0.06)'; c.lineWidth = lw; c.lineCap = 'round'; c.stroke();
+  c.strokeStyle = trackColor; c.lineWidth = lw; c.lineCap = 'round'; c.stroke();
   if (!isStandby) {
     const frac = Math.max(0, Math.min(1, (value-min)/(max-min)));
     c.beginPath(); c.arc(cx, cy, r, Math.PI, Math.PI+frac*Math.PI, false);
     c.strokeStyle = color; c.lineWidth = lw; c.lineCap = 'round';
     c.shadowColor = color; c.shadowBlur = 10; c.stroke(); c.shadowBlur = 0;
   }
-  c.strokeStyle = 'rgba(255,255,255,0.1)'; c.lineWidth = 1;
+  c.strokeStyle = tickColor; c.lineWidth = 1;
   for (let i = 0; i <= 10; i++) {
     const a = Math.PI + (i/10)*Math.PI;
     c.beginPath();
@@ -128,7 +158,7 @@ function drawGauge(el, value, min, max, color, isStandby) {
     c.lineTo(cx+(r+lw/2+2)*Math.cos(a), cy+(r+lw/2+2)*Math.sin(a));
     c.stroke();
   }
-  c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '11px JetBrains Mono';
+  c.fillStyle = labelColor; c.font = '13px JetBrains Mono';
   c.textAlign = 'left'; c.fillText(min, cx-r-2, cy+25);
   c.textAlign = 'right'; c.fillText(max, cx+r+12, cy+25);
 }
@@ -159,14 +189,14 @@ function applyState(d) {
     if (btn) btn.className = 'gen-toggle-btn active';
     if (btnLabel) btnLabel.textContent = 'Stop Generator';
 
-    drawGauge(document.getElementById('gauge-gen-voltage'), d.voltage, 0, 500, '#ff6b6b');
-    drawGauge(document.getElementById('gauge-gen-current'), d.current, 0, 200, '#ff6b6b');
-    drawGauge(document.getElementById('gauge-vibration'), d.vibration, 0, 60, '#ff6b6b');
-    drawGauge(document.getElementById('gauge-oil-pressure'), d.oil_pressure, 0, 80, '#ff6b6b');
-    drawGauge(document.getElementById('gauge-rpm'), d.rpm, 0, 2000, '#ff6b6b');
-    drawGauge(document.getElementById('gauge-freq'), d.frequency, 0, 60, '#ff6b6b');
-    drawGauge(document.getElementById('gauge-bat-voltage'), d.bat_voltage, 0, 30, '#ff6b6b');
-    drawGauge(document.getElementById('gauge-bat-current'), d.bat_current, 0, 10, '#ff6b6b');
+    drawGauge(document.getElementById('gauge-gen-voltage'), d.voltage, 0, 500, getGenColor());
+    drawGauge(document.getElementById('gauge-gen-current'), d.current, 0, 200, getGenColor());
+    drawGauge(document.getElementById('gauge-vibration'), d.vibration, 0, 60, getGenColor());
+    drawGauge(document.getElementById('gauge-oil-pressure'), d.oil_pressure, 0, 80, getGenColor());
+    drawGauge(document.getElementById('gauge-rpm'), d.rpm, 0, 2000, getGenColor());
+    drawGauge(document.getElementById('gauge-freq'), d.frequency, 0, 60, getGenColor());
+    drawGauge(document.getElementById('gauge-bat-voltage'), d.bat_voltage, 0, 30, getGenColor());
+    drawGauge(document.getElementById('gauge-bat-current'), d.bat_current, 0, 10, getGenColor());
 
     document.getElementById('gen-voltage-val').textContent = Number(d.voltage).toFixed(1);
     document.getElementById('gen-current-val').textContent = Number(d.current).toFixed(1);
@@ -194,10 +224,10 @@ function applyState(d) {
     if (btnLabel) btnLabel.textContent = 'Start Generator';
 
     ['gauge-gen-voltage','gauge-gen-current','gauge-rpm','gauge-freq','gauge-vibration','gauge-oil-pressure'].forEach(id => {
-      drawGauge(document.getElementById(id), 0, 0, 1, '#ff6b6b', true);
+      drawGauge(document.getElementById(id), 0, 0, 1, getGenColor(), true);
     });
-    drawGauge(document.getElementById('gauge-bat-voltage'), d.bat_voltage, 0, 30, '#ff6b6b');
-    drawGauge(document.getElementById('gauge-bat-current'), 0, 0, 10, '#ff6b6b', true);
+    drawGauge(document.getElementById('gauge-bat-voltage'), d.bat_voltage, 0, 30, getGenColor());
+    drawGauge(document.getElementById('gauge-bat-current'), 0, 0, 10, getGenColor(), true);
 
     document.getElementById('gen-voltage-val').textContent = '0';
     document.getElementById('gen-current-val').textContent = '0';
@@ -223,6 +253,32 @@ function applyState(d) {
   // Always update fuel/water
   setVBar('vbar-fuel', 'fuel-val', d.fuel_pct, Number(d.fuel_pct).toFixed(1));
   setVBar('vbar-water', 'water-val', d.water_pct, Number(d.water_pct).toFixed(1));
+
+  // Generator mode (auto/manual)
+  const modeBadge = document.getElementById('gen-mode-badge');
+  const isAuto = d.mode === 1 || d.mode === undefined;
+  if (modeBadge) {
+    if (isAuto) {
+      modeBadge.textContent = 'AUTO';
+      modeBadge.className = 'gen-mode-badge auto';
+    } else {
+      modeBadge.textContent = 'MANUAL';
+      modeBadge.className = 'gen-mode-badge manual';
+    }
+  }
+  // Disable toggle button in auto mode
+  if (btn) {
+    btn.disabled = isAuto;
+    if (isAuto) {
+      btn.title = 'Switch to MANUAL mode in Simulink to control remotely';
+    } else {
+      btn.title = '';
+    }
+  }
+  const noteEl = document.querySelector('.gen-control-note');
+  if (noteEl) {
+    noteEl.textContent = isAuto ? 'Auto mode — remote control disabled' : 'Admin access required';
+  }
 }
 
 /* ── Alerts ── */
@@ -302,40 +358,49 @@ async function loadChartHistory() {
 }
 
 /* ── Init ── */
+function initGenChart() {
+  const dualCtx = document.getElementById('chart-gen-dual');
+  if (dualCtx) {
+    const c = dualCtx.getContext('2d');
+    const gc = getGenColor();
+    const gP = c.createLinearGradient(0, 0, 0, 200);
+    gP.addColorStop(0, gc + '40'); gP.addColorStop(1, gc + '00');
+    const gL = c.createLinearGradient(0, 0, 0, 200);
+    gL.addColorStop(0, 'rgba(136,136,136,0.15)'); gL.addColorStop(1, 'rgba(136,136,136,0)');
+    const CHART_OPTS = getChartOpts();
+
+    dualChart = new Chart(c, {
+      type: 'line',
+      data: { labels: chartLabels,
+        datasets: [
+          { label: 'Power Out (kW)', data: powerOutData, borderColor: gc, borderWidth: 2,
+            backgroundColor: gP, fill: true, tension: 0.4, pointRadius: 0,
+            pointHoverRadius: 4, pointHoverBackgroundColor: gc,
+            pointHoverBorderColor: isLight() ? '#ffffff' : '#0a0a0a', pointHoverBorderWidth: 2 },
+          { label: 'Load (kW)', data: loadDemandData, borderColor: '#888', borderWidth: 1.5,
+            borderDash: [5, 3], backgroundColor: gL, fill: true, tension: 0.45,
+            pointRadius: 0, pointHoverRadius: 4, pointHoverBackgroundColor: '#888',
+            pointHoverBorderColor: isLight() ? '#ffffff' : '#0a0a0a', pointHoverBorderWidth: 2 }
+        ] },
+      options: CHART_OPTS
+    });
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // Toggle button → send to Flask
   document.getElementById('gen-toggle-btn').addEventListener('click', async () => {
     try {
       const res = await fetch('/api/gen_toggle', { method: 'POST' });
       if (handleAuthError(res)) return;
+      if (res.status === 403) {
+        const data = await res.json();
+        console.warn(data.error || 'Generator in AUTO mode');
+      }
     } catch (e) { console.warn('Toggle failed:', e.message); }
   });
 
-  // Dual chart
-  const dualCtx = document.getElementById('chart-gen-dual');
-  if (dualCtx) {
-    const c = dualCtx.getContext('2d');
-    const gP = c.createLinearGradient(0, 0, 0, 200);
-    gP.addColorStop(0, 'rgba(255,107,107,0.25)'); gP.addColorStop(1, 'rgba(255,107,107,0)');
-    const gL = c.createLinearGradient(0, 0, 0, 200);
-    gL.addColorStop(0, 'rgba(136,136,136,0.15)'); gL.addColorStop(1, 'rgba(136,136,136,0)');
-
-    dualChart = new Chart(c, {
-      type: 'line',
-      data: { labels: chartLabels,
-        datasets: [
-          { label: 'Power Out (kW)', data: powerOutData, borderColor: '#ff6b6b', borderWidth: 2,
-            backgroundColor: gP, fill: true, tension: 0.4, pointRadius: 0,
-            pointHoverRadius: 4, pointHoverBackgroundColor: '#ff6b6b',
-            pointHoverBorderColor: '#0a0a0a', pointHoverBorderWidth: 2 },
-          { label: 'Load (kW)', data: loadDemandData, borderColor: '#888', borderWidth: 1.5,
-            borderDash: [5, 3], backgroundColor: gL, fill: true, tension: 0.45,
-            pointRadius: 0, pointHoverRadius: 4, pointHoverBackgroundColor: '#888',
-            pointHoverBorderColor: '#0a0a0a', pointHoverBorderWidth: 2 }
-        ] },
-      options: CHART_OPTS
-    });
-  }
+  initGenChart();
 
   // Init standby
   applyState({ running: 0, voltage: 0, current: 0, rpm: 0, frequency: 0,

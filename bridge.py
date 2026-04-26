@@ -16,10 +16,10 @@ SERVER     = "http://127.0.0.1:5000"
 POLL       = 0.5   # seconds between loops
 
 # File paths — update these to match your machine
-BASE       = "C:/Users/ramis/Documents/button_trial/"
+BASE       = "C:/Users/ramis/Documents/miniGridKarazhar/"
 SIM_CMD    = BASE + "cmd_from_sim.txt"
 STATE_FILE = BASE + "state.txt"
-MAT_FILE   = "C:/Users/ramis/OneDrive - Swinburne Sarawak/Documents/MATLAB/simulink_output.mat"
+MAT_FILE   = "C:/Users/ramis/OneDrive - Swinburne Sarawak/Documents/MATLAB/miniGridTest/simulink_output.mat"
 
 # ── Variable mapping: .mat field name → Flask API key ────
 # Solar signals
@@ -70,6 +70,8 @@ GEN_VARS = {
     "gen_fault_bat_voltage":  "fault_bat_voltage",
     "gen_fault_oil_pressure": "fault_oil_pressure",
     "gen_fault_vibration":    "fault_vibration",
+    # Auto/Manual mode
+    "gen_mode":               "mode",
 }
 
 # Generator state (toggle)

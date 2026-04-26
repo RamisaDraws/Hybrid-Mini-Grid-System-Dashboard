@@ -4,6 +4,44 @@
    Live data from Flask + Weather API
    ════════════════════════════════════════════════ */
 
+/* ── Theme toggle ── */
+function getTheme() {
+  return localStorage.getItem('karazhar-theme') || 'dark';
+}
+function applyTheme(theme) {
+  if (theme === 'light') {
+    document.body.classList.add('light');
+  } else {
+    document.body.classList.remove('light');
+  }
+  localStorage.setItem('karazhar-theme', theme);
+  // Notify iframe (village map) of theme change
+  const iframe = document.getElementById('map-iframe');
+  if (iframe && iframe.contentWindow) {
+    iframe.contentWindow.postMessage({ type: 'themeChange', theme: theme }, '*');
+  }
+}
+function toggleTheme() {
+  const current = getTheme();
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+  // Rebuild charts with new colors
+  if (chartSolar) { chartSolar.destroy(); chartSolar = buildChart('chart-solar', solarData, getChartColor('solar'), getChartColor('solar')); }
+  if (chartHydro) { chartHydro.destroy(); chartHydro = buildChart('chart-hydro', hydroData, getChartColor('hydro'), getChartColor('hydro')); }
+  if (chartGen)   { chartGen.destroy();   chartGen   = buildChart('chart-gen',   genData,   getChartColor('gen'),   getChartColor('gen'));   }
+}
+// Helper: get computed color from CSS variable
+function getChartColor(type) {
+  const style = getComputedStyle(document.body);
+  if (type === 'solar') return style.getPropertyValue('--solar').trim();
+  if (type === 'hydro') return style.getPropertyValue('--hydro').trim();
+  if (type === 'gen')   return style.getPropertyValue('--gen').trim();
+  return '#888';
+}
+function isLight() { return document.body.classList.contains('light'); }
+
+// Apply saved theme on load
+applyTheme(getTheme());
+
 /* ── Auth guard ── */
 function handleAuthError(res) {
   if (res.status === 401) { window.location.href = '/login.html'; return true; }
@@ -32,22 +70,27 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
-/* ── Alert audio ── */
+/* ── Alert audio (MP3-based, mobile-safe) ── */
 let _prevAlertCount = -1;
+const _alertAudio = new Audio('audio/alert_beep.mp3');
+_alertAudio.volume = 0.4;
+let _audioUnlocked = false;
+
+function _unlockAudio() {
+  if (_audioUnlocked) return;
+  _alertAudio.play().then(() => {
+    _alertAudio.pause();
+    _alertAudio.currentTime = 0;
+    _audioUnlocked = true;
+  }).catch(() => {});
+}
+document.addEventListener('click', _unlockAudio, { once: false });
+document.addEventListener('touchstart', _unlockAudio, { once: false });
 
 function playAlertBeep() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.value = 880;
-    gain.gain.setValueAtTime(0.18, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.3);
+    _alertAudio.currentTime = 0;
+    _alertAudio.play().catch(() => {});
   } catch (e) {}
 }
 
@@ -76,27 +119,32 @@ fetchWeather();
 setInterval(fetchWeather, 600000);
 
 /* ── Chart defaults ── */
-const CHART_DEFAULTS = {
-  responsive: true, maintainAspectRatio: false, animation: false,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      backgroundColor: '#1f1f1f', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
-      titleColor: '#888', bodyColor: '#e8e8e8',
-      titleFont: { family: 'JetBrains Mono', size: 10 },
-      bodyFont: { family: 'JetBrains Mono', size: 11 },
-      padding: 8, displayColors: false,
+function getChartDefaults() {
+  const s = getComputedStyle(document.body);
+  return {
+    responsive: true, maintainAspectRatio: false, animation: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: s.getPropertyValue('--chart-tooltip-bg').trim(),
+        borderColor: s.getPropertyValue('--chart-tooltip-border').trim(), borderWidth: 1,
+        titleColor: s.getPropertyValue('--chart-tooltip-title').trim(),
+        bodyColor: s.getPropertyValue('--chart-tooltip-body').trim(),
+        titleFont: { family: 'JetBrains Mono', size: 12 },
+        bodyFont: { family: 'JetBrains Mono', size: 13 },
+        padding: 8, displayColors: false,
+      }
+    },
+    scales: {
+      x: { grid: { color: s.getPropertyValue('--chart-grid').trim(), drawBorder: false },
+           ticks: { color: s.getPropertyValue('--chart-tick').trim(), font: { family: 'JetBrains Mono', size: 11 }, maxTicksLimit: 6 },
+           border: { display: false } },
+      y: { grid: { color: s.getPropertyValue('--chart-grid').trim(), drawBorder: false },
+           ticks: { color: s.getPropertyValue('--chart-tick').trim(), font: { family: 'JetBrains Mono', size: 11 }, maxTicksLimit: 4 },
+           border: { display: false } }
     }
-  },
-  scales: {
-    x: { grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
-         ticks: { color: '#444', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 6 },
-         border: { display: false } },
-    y: { grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
-         ticks: { color: '#444', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 4 },
-         border: { display: false } }
-  }
-};
+  };
+}
 
 /* ── Time labels ── */
 function genTimeLabels(n) {
@@ -125,6 +173,7 @@ function buildChart(id, data, color, fillColor) {
   const gradient = ctx.createLinearGradient(0, 0, 0, 90);
   gradient.addColorStop(0, fillColor + '30');
   gradient.addColorStop(1, fillColor + '00');
+  const CHART_DEFAULTS = getChartDefaults();
 
   return new Chart(ctx, {
     type: 'line',
@@ -136,7 +185,7 @@ function buildChart(id, data, color, fillColor) {
         backgroundColor: gradient, fill: true, tension: 0.45,
         pointRadius: 0, pointHoverRadius: 4,
         pointHoverBackgroundColor: color,
-        pointHoverBorderColor: '#0a0a0a', pointHoverBorderWidth: 2,
+        pointHoverBorderColor: isLight() ? '#ffffff' : '#0a0a0a', pointHoverBorderWidth: 2,
       }]
     },
     options: { ...CHART_DEFAULTS,
@@ -263,9 +312,12 @@ async function loadChartHistory() {
 
 /* ── Init charts ── */
 document.addEventListener('DOMContentLoaded', () => {
-  chartSolar = buildChart('chart-solar', solarData, '#f5c842', '#f5c842');
-  chartHydro = buildChart('chart-hydro', hydroData, '#3ecfcf', '#3ecfcf');
-  chartGen   = buildChart('chart-gen',   genData,   '#ff6b6b', '#ff6b6b');
+  const sc = getChartColor('solar');
+  const hc = getChartColor('hydro');
+  const gc = getChartColor('gen');
+  chartSolar = buildChart('chart-solar', solarData, sc, sc);
+  chartHydro = buildChart('chart-hydro', hydroData, hc, hc);
+  chartGen   = buildChart('chart-gen',   genData,   gc, gc);
 
   // Load chart history from server
   loadChartHistory();

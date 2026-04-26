@@ -90,14 +90,14 @@
 
 .hydro-image-placeholder span {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   color: var(--hydro);
   letter-spacing: 0.15em;
   opacity: 0.5;
 }
 
 .hydro-image-placeholder .placeholder-sub {
-  font-size: 0.62rem;
+  font-size: 0.82rem;
   color: var(--text-dim);
   letter-spacing: 0.06em;
   opacity: 1;
@@ -116,7 +116,7 @@
 
 .hydro-image-label {
   font-family: 'Syne', sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.88rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -128,7 +128,7 @@
   align-items: center;
   gap: 0.35rem;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   color: var(--hydro);
   background: var(--hydro-dim);
   border: 1px solid rgba(62, 207, 207, 0.2);
@@ -160,7 +160,7 @@
 
 .hydro-chart-title {
   font-family: 'Syne', sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.88rem;
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -177,7 +177,7 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   letter-spacing: 0.04em;
 }
@@ -218,7 +218,7 @@
 
 .flow-chart-title {
   font-family: 'Syne', sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.88rem;
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -227,7 +227,7 @@
 
 .flow-chart-unit {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem;
+  font-size: 0.82rem;
   color: var(--text-dim);
   background: var(--surface2);
   padding: 0.15rem 0.4rem;
@@ -258,7 +258,7 @@
 
 .gauge-card-label {
   font-family: 'Syne', sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -297,7 +297,7 @@
 }
 
 .gauge-subtext {
-  font-size: 0.63rem;
+  font-size: 0.73rem;
   color: var(--text-dim);
   letter-spacing: 0.05em;
 }
@@ -317,7 +317,7 @@
 
 .pump-state-label {
   font-family: 'Syne', sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -381,7 +381,7 @@
 }
 
 .pump-state-sub {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: var(--text-dim);
   letter-spacing: 0.04em;
   line-height: 1.4;
@@ -405,7 +405,7 @@
 }
 
 .pump-meta-label {
-  font-size: 0.58rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--text-dim);
@@ -413,7 +413,7 @@
 
 .pump-meta-val {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   font-weight: 500;
   color: var(--hydro);
 }
@@ -547,7 +547,7 @@
   }
 
   .gauge-subtext {
-    font-size: 0.58rem;
+    font-size: 0.68rem;
     text-align: center;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -559,11 +559,11 @@
   }
 
   .pump-meta-label {
-    font-size: 0.52rem;
+    font-size: 0.62rem;
   }
 
   .pump-meta-val {
-    font-size: 0.72rem;
+    font-size: 0.82rem;
   }
 
   /* Pump indicator — constrain icon */
@@ -577,7 +577,7 @@
   }
 
   .pump-state-sub {
-    font-size: 0.6rem;
+    font-size: 0.7rem;
   }
 
   /* Chart/image header stacking */
@@ -648,6 +648,24 @@
   }
 
   .pump-state-value {
-    font-size: 0.78rem;
+    font-size: 0.88rem;
   }
+}
+/* ── Light mode card shadows ── */
+body.light .hydro-image-card,
+body.light .hydro-chart-card,
+body.light .flow-chart-card,
+body.light .gauge-card,
+body.light .pressure-gauge-card,
+body.light .pump-state-card,
+body.light .threshold-card,
+body.light .hydro-alerts {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+body.light .hydro-image-inner {
+  background: #e2ecee;
+}
+body.light .hydro-image-placeholder {
+  background: linear-gradient(135deg, #e8eff1 0%, #d8e8ea 60%, #e8eff1 100%);
 }

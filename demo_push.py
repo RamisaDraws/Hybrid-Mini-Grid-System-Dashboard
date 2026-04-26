@@ -102,6 +102,9 @@ while True:
         "gen_fault_bat_voltage":  0,
         "gen_fault_oil_pressure": 1 if (tick % 70 > 60 and gen_running) else 0,
         "gen_fault_vibration":    1 if (tick % 50 > 40 and gen_running) else 0,
+
+        # ── Generator mode (0=manual, 1=auto) ──
+        "gen_mode":               0,  # manual by default for testing
     }
 
     try:

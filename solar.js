@@ -3,6 +3,33 @@
    Karazhar Minigrid — Solar PV Page (Live)
    ════════════════════════════════════════════════ */
 
+/* ── Theme ── */
+function getTheme() { return localStorage.getItem('karazhar-theme') || 'dark'; }
+function applyTheme(theme) {
+  if (theme === 'light') document.body.classList.add('light');
+  else document.body.classList.remove('light');
+  localStorage.setItem('karazhar-theme', theme);
+}
+function toggleTheme() {
+  applyTheme(getTheme() === 'dark' ? 'light' : 'dark');
+  // Redraw gauges with current values
+  const vEl = document.getElementById('voltage-val');
+  const cEl = document.getElementById('current-val');
+  const v = vEl ? parseFloat(vEl.textContent) || 0 : 0;
+  const c = cEl ? parseFloat(cEl.textContent) || 0 : 0;
+  const sc = getSolarColor();
+  drawGauge(document.getElementById('gauge-voltage'), v, 260, sc);
+  drawGauge(document.getElementById('gauge-current'), c, 100, sc);
+  // Rebuild chart
+  if (solarChart) {
+    solarChart.destroy();
+    initSolarChart();
+  }
+}
+function isLight() { return document.body.classList.contains('light'); }
+function getSolarColor() { return getComputedStyle(document.body).getPropertyValue('--solar').trim(); }
+applyTheme(getTheme());
+
 /* ── Auth ── */
 function handleAuthError(res) {
   if (res.status === 401) { window.location.href = '/login.html'; return true; }
@@ -31,22 +58,27 @@ async function doLogout() {
   tick(); setInterval(tick, 1000);
 })();
 
-/* ── Alert audio ── */
+/* ── Alert audio (MP3-based, mobile-safe) ── */
 let _prevAlertCount = -1;
+const _alertAudio = new Audio('audio/alert_beep.mp3');
+_alertAudio.volume = 0.4;
+let _audioUnlocked = false;
+
+function _unlockAudio() {
+  if (_audioUnlocked) return;
+  _alertAudio.play().then(() => {
+    _alertAudio.pause();
+    _alertAudio.currentTime = 0;
+    _audioUnlocked = true;
+  }).catch(() => {});
+}
+document.addEventListener('click', _unlockAudio, { once: false });
+document.addEventListener('touchstart', _unlockAudio, { once: false });
 
 function playAlertBeep() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.value = 880;
-    gain.gain.setValueAtTime(0.18, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.3);
+    _alertAudio.currentTime = 0;
+    _alertAudio.play().catch(() => {});
   } catch (e) {}
 }
 
@@ -89,28 +121,33 @@ fetchWeather();
 setInterval(fetchWeather, 600000);
 
 /* ── Chart options ── */
-const CHART_OPTS = {
-  responsive: true, maintainAspectRatio: false, animation: false,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      backgroundColor: '#1f1f1f', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
-      titleColor: '#888', bodyColor: '#e8e8e8',
-      titleFont: { family: 'JetBrains Mono', size: 10 },
-      bodyFont: { family: 'JetBrains Mono', size: 11 },
-      padding: 8, displayColors: true,
-      callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toFixed(1)} kW` }
+function getChartOpts() {
+  const s = getComputedStyle(document.body);
+  return {
+    responsive: true, maintainAspectRatio: false, animation: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: s.getPropertyValue('--chart-tooltip-bg').trim(),
+        borderColor: s.getPropertyValue('--chart-tooltip-border').trim(), borderWidth: 1,
+        titleColor: s.getPropertyValue('--chart-tooltip-title').trim(),
+        bodyColor: s.getPropertyValue('--chart-tooltip-body').trim(),
+        titleFont: { family: 'JetBrains Mono', size: 12 },
+        bodyFont: { family: 'JetBrains Mono', size: 13 },
+        padding: 8, displayColors: true,
+        callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toFixed(1)} kW` }
+      }
+    },
+    scales: {
+      x: { grid: { color: s.getPropertyValue('--chart-grid').trim(), drawBorder: false },
+           ticks: { color: s.getPropertyValue('--chart-tick').trim(), font: { family: 'JetBrains Mono', size: 11 }, maxTicksLimit: 8 },
+           border: { display: false } },
+      y: { grid: { color: s.getPropertyValue('--chart-grid').trim(), drawBorder: false },
+           ticks: { color: s.getPropertyValue('--chart-tick').trim(), font: { family: 'JetBrains Mono', size: 11 }, maxTicksLimit: 5 },
+           border: { display: false } }
     }
-  },
-  scales: {
-    x: { grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
-         ticks: { color: '#444', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 8 },
-         border: { display: false } },
-    y: { grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
-         ticks: { color: '#444', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 5 },
-         border: { display: false } }
-  }
-};
+  };
+}
 
 const chartLabels = Array.from({ length: 16 }, () => '--:--');
 
@@ -120,14 +157,18 @@ function drawGauge(el, value, max, color) {
   const W = el.width, H = el.height;
   const cx = W / 2, cy = H - 25;
   const r = Math.min(W / 2, H) - 14, lw = 12;
+  const s = getComputedStyle(document.body);
+  const trackColor = s.getPropertyValue('--gauge-track').trim();
+  const tickColor = s.getPropertyValue('--gauge-tick').trim();
+  const labelColor = s.getPropertyValue('--gauge-label').trim();
   c.clearRect(0, 0, W, H);
   c.beginPath(); c.arc(cx, cy, r, Math.PI, 0, false);
-  c.strokeStyle = 'rgba(255,255,255,0.06)'; c.lineWidth = lw; c.lineCap = 'round'; c.stroke();
+  c.strokeStyle = trackColor; c.lineWidth = lw; c.lineCap = 'round'; c.stroke();
   const frac = Math.max(0, Math.min(1, value / max));
   c.beginPath(); c.arc(cx, cy, r, Math.PI, Math.PI + frac * Math.PI, false);
   c.strokeStyle = color; c.lineWidth = lw; c.lineCap = 'round';
   c.shadowColor = color; c.shadowBlur = 10; c.stroke(); c.shadowBlur = 0;
-  c.strokeStyle = 'rgba(255,255,255,0.1)'; c.lineWidth = 1;
+  c.strokeStyle = tickColor; c.lineWidth = 1;
   for (let i = 0; i <= 10; i++) {
     const a = Math.PI + (i / 10) * Math.PI;
     c.beginPath();
@@ -135,7 +176,7 @@ function drawGauge(el, value, max, color) {
     c.lineTo(cx + (r + lw/2 + 2) * Math.cos(a), cy + (r + lw/2 + 2) * Math.sin(a));
     c.stroke();
   }
-  c.fillStyle = 'rgba(255,255,255,0.7)'; c.font = '12px JetBrains Mono';
+  c.fillStyle = labelColor; c.font = '13px JetBrains Mono';
   c.textAlign = 'left'; c.fillText('0', cx - r - 2, cy + 25);
   c.textAlign = 'right'; c.fillText(max, cx + r + 10, cy + 25);
 }
@@ -225,36 +266,44 @@ async function loadChartHistory() {
 }
 
 /* ── Init ── */
-document.addEventListener('DOMContentLoaded', () => {
+function initSolarChart() {
   const ctx = document.getElementById('chart-solar-dual');
   if (ctx) {
     const c = ctx.getContext('2d');
+    const sc = getSolarColor();
+    const gc = getComputedStyle(document.body).getPropertyValue('--gen').trim();
     const gP = c.createLinearGradient(0, 0, 0, 220);
-    gP.addColorStop(0, 'rgba(245,200,66,0.28)'); gP.addColorStop(1, 'rgba(245,200,66,0)');
+    gP.addColorStop(0, sc + '48'); gP.addColorStop(1, sc + '00');
     const gL = c.createLinearGradient(0, 0, 0, 220);
-    gL.addColorStop(0, 'rgba(255,107,107,0.18)'); gL.addColorStop(1, 'rgba(255,107,107,0)');
+    gL.addColorStop(0, gc + '30'); gL.addColorStop(1, gc + '00');
+    const CHART_OPTS = getChartOpts();
 
     solarChart = new Chart(c, {
       type: 'line',
       data: {
         labels: chartLabels,
         datasets: [
-          { label: 'Power Out (kW)', data: powerData, borderColor: '#f5c842', borderWidth: 2,
+          { label: 'Power Out (kW)', data: powerData, borderColor: sc, borderWidth: 2,
             backgroundColor: gP, fill: true, tension: 0.45, pointRadius: 0,
-            pointHoverRadius: 4, pointHoverBackgroundColor: '#f5c842',
-            pointHoverBorderColor: '#0a0a0a', pointHoverBorderWidth: 2 },
-          { label: 'Load (kW)', data: loadData, borderColor: '#ff6b6b', borderWidth: 1.5,
+            pointHoverRadius: 4, pointHoverBackgroundColor: sc,
+            pointHoverBorderColor: isLight() ? '#ffffff' : '#0a0a0a', pointHoverBorderWidth: 2 },
+          { label: 'Load (kW)', data: loadData, borderColor: gc, borderWidth: 1.5,
             borderDash: [5, 3], backgroundColor: gL, fill: true, tension: 0.45,
-            pointRadius: 0, pointHoverRadius: 4, pointHoverBackgroundColor: '#ff6b6b',
-            pointHoverBorderColor: '#0a0a0a', pointHoverBorderWidth: 2 }
+            pointRadius: 0, pointHoverRadius: 4, pointHoverBackgroundColor: gc,
+            pointHoverBorderColor: isLight() ? '#ffffff' : '#0a0a0a', pointHoverBorderWidth: 2 }
         ]
       },
       options: CHART_OPTS
     });
   }
+}
 
-  drawGauge(document.getElementById('gauge-voltage'), 0, 260, '#f5c842');
-  drawGauge(document.getElementById('gauge-current'), 0, 100, '#f5c842');
+document.addEventListener('DOMContentLoaded', () => {
+  initSolarChart();
+
+  const sc = getSolarColor();
+  drawGauge(document.getElementById('gauge-voltage'), 0, 260, sc);
+  drawGauge(document.getElementById('gauge-current'), 0, 100, sc);
 
   loadChartHistory();
   loadThresholds();
@@ -269,8 +318,9 @@ setInterval(async () => {
     if (handleAuthError(res)) return;
     const d = await res.json();
 
-    drawGauge(document.getElementById('gauge-voltage'), d.voltage, 260, '#f5c842');
-    drawGauge(document.getElementById('gauge-current'), d.current, 100, '#f5c842');
+    const sc = getSolarColor();
+    drawGauge(document.getElementById('gauge-voltage'), d.voltage, 260, sc);
+    drawGauge(document.getElementById('gauge-current'), d.current, 100, sc);
     const vEl = document.getElementById('voltage-val');
     const cEl = document.getElementById('current-val');
     if (vEl) vEl.textContent = Number(d.voltage).toFixed(1);

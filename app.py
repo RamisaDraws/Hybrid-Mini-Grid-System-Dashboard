@@ -41,7 +41,8 @@ _gen = {
     "oil_pressure": 0, "vibration": 0,
     "fault_voltage": 0, "fault_rpm": 0, "fault_coolant": 0,
     "fault_fuel": 0, "fault_water": 0, "fault_bat_voltage": 0,
-    "fault_oil_pressure": 0, "fault_vibration": 0
+    "fault_oil_pressure": 0, "fault_vibration": 0,
+    "mode": 1
 }
 
 _gen_pending = {"cmd": ""}
@@ -75,6 +76,7 @@ _GEN_PREFIX = {
     "gen_fault_coolant": "fault_coolant", "gen_fault_fuel": "fault_fuel",
     "gen_fault_water": "fault_water", "gen_fault_bat_voltage": "fault_bat_voltage",
     "gen_fault_oil_pressure": "fault_oil_pressure", "gen_fault_vibration": "fault_vibration",
+    "gen_mode": "mode",
 }
 
 # ── Chart history (server-side rolling arrays for tab-switch persistence) ─
@@ -433,6 +435,8 @@ def api_chart_history():
 @login_required
 def gen_toggle():
     with _lock:
+        if _gen.get('mode', 1) == 1:
+            return jsonify(ok=False, error="Generator is in AUTO mode — switch to MANUAL to control remotely"), 403
         _gen_pending['cmd'] = 'TOGGLE'
     return jsonify(ok=True)
 
