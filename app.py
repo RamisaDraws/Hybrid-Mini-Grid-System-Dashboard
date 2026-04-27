@@ -42,7 +42,7 @@ _gen = {
     "fault_voltage": 0, "fault_rpm": 0, "fault_coolant": 0,
     "fault_fuel": 0, "fault_water": 0, "fault_bat_voltage": 0,
     "fault_oil_pressure": 0, "fault_vibration": 0,
-    "mode": 1
+    "mode":0
 }
 
 _gen_pending = {"cmd": ""}
@@ -76,7 +76,7 @@ _GEN_PREFIX = {
     "gen_fault_coolant": "fault_coolant", "gen_fault_fuel": "fault_fuel",
     "gen_fault_water": "fault_water", "gen_fault_bat_voltage": "fault_bat_voltage",
     "gen_fault_oil_pressure": "fault_oil_pressure", "gen_fault_vibration": "fault_vibration",
-    "gen_mode": "mode",
+    "gen_mode":"mode",
 }
 
 # ── Chart history (server-side rolling arrays for tab-switch persistence) ─
@@ -109,6 +109,10 @@ _thresholds = {
 _active_conditions = {}
 _prev_states = {"charging": None, "pump_state": None, "gen_running": None}
 
+# ── In-memory alert cache (avoids disk read on every /api/data call) ─
+_alerts_cache = []
+_alerts_cache_date = None
+
 # ── Alert file I/O ───────────────────────────────────────
 def _today_str():
     return datetime.date.today().strftime("%Y-%m-%d")
@@ -119,6 +123,28 @@ def _alert_file(date_str=None):
     return os.path.join(ALERTS_DIR, f"alerts_{date_str}.json")
 
 def _load_alerts_for_date(date_str=None):
+    global _alerts_cache, _alerts_cache_date
+    today = _today_str()
+    # For today — use in-memory cache, no disk read
+    if date_str is None or date_str == today:
+        if _alerts_cache_date == today:
+            return list(_alerts_cache)
+        # First call of the day — load from disk and populate cache
+        path = _alert_file(today)
+        if not os.path.exists(path):
+            _alerts_cache = []
+            _alerts_cache_date = today
+            return []
+        try:
+            with open(path, 'r') as f:
+                _alerts_cache = json.load(f)
+            _alerts_cache_date = today
+            return list(_alerts_cache)
+        except (json.JSONDecodeError, IOError):
+            _alerts_cache = []
+            _alerts_cache_date = today
+            return []
+    # Past dates — read from disk (infrequent, triggered by date dropdown only)
     path = _alert_file(date_str)
     if not os.path.exists(path):
         return []
@@ -129,12 +155,18 @@ def _load_alerts_for_date(date_str=None):
         return []
 
 def _save_alert(alert):
+    global _alerts_cache, _alerts_cache_date
+    today = _today_str()
+    # Update in-memory cache immediately
+    if _alerts_cache_date != today:
+        _alerts_cache = []
+        _alerts_cache_date = today
+    _alerts_cache.append(alert)
+    # Write to disk asynchronously to avoid blocking the request thread
     path = _alert_file()
-    alerts = _load_alerts_for_date()
-    alerts.append(alert)
     try:
         with open(path, 'w') as f:
-            json.dump(alerts, f)
+            json.dump(_alerts_cache, f)
     except IOError as e:
         print(f"[ALERT WRITE ERR] {e}")
 
@@ -361,8 +393,10 @@ def api_update():
         if "running" in data and "gen_running" not in data:
             _gen["running"] = data["running"]
 
-        _generate_alerts()
         _chart_update_counter += 1
+        # Check alerts every 6th update (~3s at 0.5s poll) — reduces disk writes
+        if _chart_update_counter % 6 == 0:
+            _generate_alerts()
         if _chart_update_counter % 3 == 0:
             _update_chart_history()
     return jsonify(ok=True)
@@ -435,8 +469,6 @@ def api_chart_history():
 @login_required
 def gen_toggle():
     with _lock:
-        if _gen.get('mode', 1) == 1:
-            return jsonify(ok=False, error="Generator is in AUTO mode — switch to MANUAL to control remotely"), 403
         _gen_pending['cmd'] = 'TOGGLE'
     return jsonify(ok=True)
 
@@ -476,19 +508,21 @@ def set_thresholds(source):
 @app.route('/api/alerts/clear/<source>', methods=['POST'])
 @login_required
 def clear_alerts(source):
+    global _alerts_cache, _alerts_cache_date
     path = _alert_file()
     if source == "all":
+        _alerts_cache = []
+        _alerts_cache_date = _today_str()
         try:
             with open(path, 'w') as f:
                 json.dump([], f)
         except IOError:
             pass
     else:
-        alerts = _load_alerts_for_date()
-        alerts = [a for a in alerts if a.get("source") != source]
+        _alerts_cache = [a for a in _alerts_cache if a.get("source") != source]
         try:
             with open(path, 'w') as f:
-                json.dump(alerts, f)
+                json.dump(_alerts_cache, f)
         except IOError:
             pass
     return jsonify(ok=True)

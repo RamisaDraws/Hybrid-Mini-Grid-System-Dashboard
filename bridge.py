@@ -167,20 +167,20 @@ while True:
     # Read Simulink signals from .mat
     signals = read_mat()
     if signals:
-        # Map solar signals
-        for mat_key, api_key in SOLAR_VARS.items():
+        # Map solar signals — send prefixed keys (e.g. "solar_voltage")
+        for mat_key in SOLAR_VARS:
             if mat_key in signals:
-                payload[api_key] = signals[mat_key]
+                payload[mat_key] = signals[mat_key]
 
-        # Map hydro signals
-        for mat_key, api_key in HYDRO_VARS.items():
+        # Map hydro signals — send prefixed keys (e.g. "hydro_voltage")
+        for mat_key in HYDRO_VARS:
             if mat_key in signals:
-                payload[api_key] = signals[mat_key]
+                payload[mat_key] = signals[mat_key]
 
-        # Map generator signals
-        for mat_key, api_key in GEN_VARS.items():
+        # Map generator signals — send prefixed keys (e.g. "gen_voltage")
+        for mat_key in GEN_VARS:
             if mat_key in signals:
-                payload[api_key] = signals[mat_key]
+                payload[mat_key] = signals[mat_key]
 
         # Print summary
         sv = signals.get("solar_voltage", 0)

@@ -224,11 +224,11 @@
     if (theme === 'light') {
       document.body.classList.add('light');
       const thumb = document.getElementById('login-toggle-thumb');
-      if (thumb) { thumb.style.transform = 'translateX(18px)'; thumb.style.background = 'var(--accent)'; }
+      if (thumb) { thumb.style.transform = 'translateX(0)'; thumb.style.background = 'var(--accent)'; }
     } else {
       document.body.classList.remove('light');
       const thumb = document.getElementById('login-toggle-thumb');
-      if (thumb) { thumb.style.transform = 'translateX(0)'; thumb.style.background = 'var(--text-muted)'; }
+      if (thumb) { thumb.style.transform = 'translateX(18px)'; thumb.style.background = 'var(--text-muted)'; }
     }
     localStorage.setItem('karazhar-theme', theme);
   }

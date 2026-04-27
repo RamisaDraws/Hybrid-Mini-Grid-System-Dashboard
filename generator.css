@@ -444,7 +444,7 @@
 
 .vbar-label {
   font-family: 'Syne', sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -477,7 +477,8 @@
 
 .vbar-value {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
+  font-size: 1.3rem;
+  margin-top: 10px;
   font-weight: 500;
   line-height: 1;
 }

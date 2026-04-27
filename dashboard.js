@@ -70,27 +70,22 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
-/* ── Alert audio (MP3-based, mobile-safe) ── */
+/* ── Alert audio ── */
 let _prevAlertCount = -1;
-const _alertAudio = new Audio('audio/alert_beep.mp3');
-_alertAudio.volume = 0.4;
-let _audioUnlocked = false;
-
-function _unlockAudio() {
-  if (_audioUnlocked) return;
-  _alertAudio.play().then(() => {
-    _alertAudio.pause();
-    _alertAudio.currentTime = 0;
-    _audioUnlocked = true;
-  }).catch(() => {});
-}
-document.addEventListener('click', _unlockAudio, { once: false });
-document.addEventListener('touchstart', _unlockAudio, { once: false });
 
 function playAlertBeep() {
   try {
-    _alertAudio.currentTime = 0;
-    _alertAudio.play().catch(() => {});
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
   } catch (e) {}
 }
 
@@ -210,7 +205,7 @@ function setStatVal(selector, val, unit) {
   el.innerHTML = `${val} <span class="stat-unit">${unit}</span>`;
 }
 
-/* ── Render alerts ── */
+/* ── Render alerts into a specific container ── */
 function renderAlerts(containerSelector, alerts) {
   const el = document.querySelector(containerSelector);
   if (!el) return;
@@ -224,7 +219,7 @@ function renderAlerts(containerSelector, alerts) {
       </div></div>`;
     return;
   }
-  alerts.slice().reverse().forEach(a => {
+  alerts.slice(-10).reverse().forEach(a => {
     const levelClass = a.level === 'warn' ? 'alert-warn' : a.level === 'crit' ? 'alert-crit' : 'alert-info';
     const dotClass = a.level === 'warn' ? 'dot-yellow' : a.level === 'crit' ? 'dot-red' : 'dot-green';
     el.innerHTML += `
@@ -238,45 +233,44 @@ function renderAlerts(containerSelector, alerts) {
   });
 }
 
-/* ── Alert date dropdown ── */
-let currentAlertDate = 'today';
-
+/* ── Alert date dropdowns (one per source) ── */
 async function loadAlertDates() {
   try {
     const res = await fetch('/api/alerts/dates');
     if (handleAuthError(res)) return;
     const data = await res.json();
-    const sel = document.getElementById('alert-date-select');
-    if (!sel) return;
-    sel.innerHTML = '';
-    // "Today" option
     const today = new Date().toISOString().slice(0, 10);
-    const todayOpt = document.createElement('option');
-    todayOpt.value = today;
-    todayOpt.textContent = 'Today';
-    sel.appendChild(todayOpt);
-    // Other dates
-    (data.dates || []).forEach(d => {
-      if (d === today) return; // skip today (already added)
-      const opt = document.createElement('option');
-      opt.value = d;
-      // Format as DD/MM/YY
-      const parts = d.split('-');
-      opt.textContent = `${parts[2]}/${parts[1]}/${parts[0].slice(2)}`;
-      sel.appendChild(opt);
+    ['solar', 'hydro', 'gen'].forEach(src => {
+      const sel = document.getElementById('alert-date-' + src);
+      if (!sel) return;
+      sel.innerHTML = '';
+      const todayOpt = document.createElement('option');
+      todayOpt.value = today;
+      todayOpt.textContent = 'Today';
+      sel.appendChild(todayOpt);
+      (data.dates || []).forEach(d => {
+        if (d === today) return;
+        const opt = document.createElement('option');
+        opt.value = d;
+        const parts = d.split('-');
+        opt.textContent = `${parts[2]}/${parts[1]}/${parts[0].slice(2)}`;
+        sel.appendChild(opt);
+      });
     });
   } catch (e) {}
 }
 
-async function onAlertDateChange() {
-  const sel = document.getElementById('alert-date-select');
+async function onAlertDateChange(source) {
+  const selId = source === 'generator' ? 'alert-date-gen' : 'alert-date-' + source;
+  const listId = source === 'generator' ? 'alerts-list-gen' : 'alerts-list-' + source;
+  const sel = document.getElementById(selId);
   if (!sel) return;
   const dateStr = sel.value;
   try {
-    const res = await fetch(`/api/alerts/${dateStr}`);
+    const res = await fetch(`/api/alerts/${dateStr}?source=${source}`);
     if (handleAuthError(res)) return;
     const data = await res.json();
-    renderAlerts('.panel-alerts .alerts-list', data.alerts || []);
+    renderAlerts('#' + listId, data.alerts || []);
   } catch (e) {}
 }
 
@@ -372,13 +366,28 @@ setInterval(async () => {
       pushChart(chartGen,   genData,   d.gen.power_out);
     }
 
-    // Alerts — only update if dropdown shows today
-    const sel = document.getElementById('alert-date-select');
+    // Alerts — split by source into 3 panels, only update if dropdown shows today
     const today = new Date().toISOString().slice(0, 10);
-    if (!sel || sel.value === today) {
-      checkAlertSound(d.alerts);
-      renderAlerts('.panel-alerts .alerts-list', d.alerts || []);
+    const allAlerts = d.alerts || [];
+
+    const solarAlerts = allAlerts.filter(a => a.source === 'solar');
+    const hydroAlerts = allAlerts.filter(a => a.source === 'hydro');
+    const genAlerts = allAlerts.filter(a => a.source === 'generator');
+
+    const selSolar = document.getElementById('alert-date-solar');
+    if (!selSolar || selSolar.value === today) {
+      renderAlerts('#alerts-list-solar', solarAlerts);
     }
+    const selHydro = document.getElementById('alert-date-hydro');
+    if (!selHydro || selHydro.value === today) {
+      renderAlerts('#alerts-list-hydro', hydroAlerts);
+    }
+    const selGen = document.getElementById('alert-date-gen');
+    if (!selGen || selGen.value === today) {
+      renderAlerts('#alerts-list-gen', genAlerts);
+    }
+
+    checkAlertSound(allAlerts);
 
   } catch (e) {
     console.warn('Bridge not connected:', e.message);

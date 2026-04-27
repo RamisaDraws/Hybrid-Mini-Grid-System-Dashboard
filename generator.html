@@ -54,6 +54,11 @@
   <a href="hydro.html" class="nav-link hydro-link">Hydro</a>
   <a href="generator.html" class="nav-link gen-link active">Generator</a>
   <a href="#" class="nav-link" onclick="doLogout(); return false;">Logout</a>
+  <div class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">
+    <span class="theme-toggle-icon">☀️</span>
+    <div class="theme-toggle-track"><div class="theme-toggle-thumb"></div></div>
+    <span class="theme-toggle-icon">🌙</span>
+  </div>
 </nav>
 
 <!-- ── MAIN ── -->
@@ -75,7 +80,7 @@
         <span class="gen-control-note">Admin access required</span>
         <div class="gen-mode-indicator" id="gen-mode-indicator">
           <span class="gen-mode-label">Mode:</span>
-          <span class="gen-mode-badge auto" id="gen-mode-badge">AUTO</span>
+          <span class="gen-mode-badge manual" id="gen-mode-badge">MANUAL</span>
         </div>
       </div>
       <div class="gen-image-card">

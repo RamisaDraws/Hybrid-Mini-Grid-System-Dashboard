@@ -59,6 +59,11 @@
   <a href="hydro.html" class="nav-link hydro-link">Hydro</a>
   <a href="generator.html" class="nav-link gen-link">Generator</a>
   <a href="#" class="nav-link" onclick="doLogout(); return false;">Logout</a>
+  <div class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">
+    <span class="theme-toggle-icon">☀️</span>
+    <div class="theme-toggle-track"><div class="theme-toggle-thumb"></div></div>
+    <span class="theme-toggle-icon">🌙</span>
+  </div>
 </nav>
 
 <!-- ── MAIN LAYOUT ── -->
@@ -186,25 +191,65 @@
 
   </section>
 
-  <!-- RIGHT: Alerts sidebar -->
-  <aside class="panel-alerts">
-    <div class="panel-label">
-      <span class="dot dot-red blink"></span>
-      Alerts
-    </div>
-    <div class="alert-date-picker">
-      <select id="alert-date-select" onchange="onAlertDateChange()"></select>
-    </div>
-    <div class="alerts-list">
-      <div class="alert-item alert-info">
-        <div class="alert-dot dot-green"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Waiting for data…</span>
-          <span class="alert-time">--:--:--</span>
+  <!-- ── ALERTS ROW: 3 panels (Solar | Hydro | Generator) ── -->
+  <section class="alerts-row">
+    <aside class="panel-alerts panel-alerts-solar">
+      <div class="panel-label">
+        <span class="dot dot-yellow blink"></span>
+        Solar Alerts
+      </div>
+      <div class="alert-date-picker">
+        <select id="alert-date-solar" onchange="onAlertDateChange('solar')"></select>
+      </div>
+      <div class="alerts-list" id="alerts-list-solar">
+        <div class="alert-item alert-info">
+          <div class="alert-dot dot-green"></div>
+          <div class="alert-body">
+            <span class="alert-msg">Waiting for data…</span>
+            <span class="alert-time">--:--:--</span>
+          </div>
         </div>
       </div>
-    </div>
-  </aside>
+    </aside>
+
+    <aside class="panel-alerts panel-alerts-hydro">
+      <div class="panel-label">
+        <span class="dot dot-green blink"></span>
+        Hydro Alerts
+      </div>
+      <div class="alert-date-picker">
+        <select id="alert-date-hydro" onchange="onAlertDateChange('hydro')"></select>
+      </div>
+      <div class="alerts-list" id="alerts-list-hydro">
+        <div class="alert-item alert-info">
+          <div class="alert-dot dot-green"></div>
+          <div class="alert-body">
+            <span class="alert-msg">Waiting for data…</span>
+            <span class="alert-time">--:--:--</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <aside class="panel-alerts panel-alerts-gen">
+      <div class="panel-label">
+        <span class="dot dot-red blink"></span>
+        Generator Alerts
+      </div>
+      <div class="alert-date-picker">
+        <select id="alert-date-gen" onchange="onAlertDateChange('generator')"></select>
+      </div>
+      <div class="alerts-list" id="alerts-list-gen">
+        <div class="alert-item alert-info">
+          <div class="alert-dot dot-green"></div>
+          <div class="alert-body">
+            <span class="alert-msg">Waiting for data…</span>
+            <span class="alert-time">--:--:--</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </section>
 
 </main>
 
