@@ -33,9 +33,9 @@
   gap: 1rem;
 }
 
-/* SOC and temp span both columns */
-.soc-card  { grid-column: 1 / -1; }
-.temp-card { grid-column: 1 / -1; }
+/* SOC+RMS row and temp span both columns */
+.soc-rms-row { grid-column: 1 / -1; }
+.temp-card   { grid-column: 1 / -1; }
 
 .solar-alerts {
   grid-area: alerts;
@@ -49,6 +49,24 @@
 .gauge-card       { animation: fadeUp 0.4s ease 0.15s both; }
 .soc-card         { animation: fadeUp 0.4s ease 0.2s both; }
 .temp-card        { animation: fadeUp 0.4s ease 0.25s both; }
+
+/* ── SOC + RMS side-by-side row ── */
+.soc-rms-row {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+}
+.soc-rms-row .soc-card {
+  flex: 1;
+  min-width: 0;
+}
+.soc-rms-row .rms-gauge-card {
+  flex: 0 0 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 
 /* ══════════════════════
    IMAGE CARD
@@ -157,7 +175,7 @@
 
 .chart-card-title {
   font-family: 'Syne', sans-serif;
-  font-size: 0.78rem;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -209,12 +227,13 @@
 
 .gauge-card-label {
   font-family: 'Syne', sans-serif;
-  font-size: 0.75rem;
+  font-size: 1rem;
+  text-align: center;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-muted);
-  align-self: flex-start;
+  align-self: center;
 }
 
 .gauge-canvas {
@@ -235,7 +254,7 @@
 
 .gauge-value {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1.5rem;
+  font-size: 1.7rem;
   font-weight: 500;
   line-height: 1;
   color: var(--solar);
@@ -243,7 +262,7 @@
 
 .gauge-unit {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1rem;
+  font-size: 1.3rem;
   color: var(--solar);
   letter-spacing: 0.04em;
 }
@@ -570,9 +589,18 @@
   /* Prevent gauge/SOC/temp cards from overflowing viewport */
   .gauge-card,
   .soc-card,
+  .rms-gauge-card,
   .temp-card {
     max-width: 100%;
     overflow: hidden;
+  }
+
+  .soc-rms-row {
+    flex-direction: column;
+  }
+  .soc-rms-row .rms-gauge-card {
+    flex: none;
+    width: 100%;
   }
 
   /* Temp readings: stack to 1-column on narrow screens */

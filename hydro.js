@@ -13,7 +13,7 @@ function applyTheme(theme) {
 function toggleTheme() {
   applyTheme(getTheme() === 'dark' ? 'light' : 'dark');
   const hc = getHydroColor();
-  drawGauge(document.getElementById('gauge-pressure'), parseFloat(document.getElementById('pressure-val').textContent) || 0, 0, 64, hc);
+  drawGauge(document.getElementById('gauge-pressure'), parseFloat(document.getElementById('pressure-val').textContent) || 0, 0, 500, hc);
   drawGauge(document.getElementById('gauge-voltage'), parseFloat(document.getElementById('voltage-val').textContent) || 0, 0, 440, hc);
   drawGauge(document.getElementById('gauge-current'), parseFloat(document.getElementById('current-val').textContent) || 0, 0, 300, hc);
   if (flowChart) { flowChart.destroy(); flowChart = null; }
@@ -87,17 +87,11 @@ mobileNav.querySelectorAll('.nav-link').forEach(l =>
   l.addEventListener('click', () => mobileNav.classList.remove('open'))
 );
 
-/* ── Weather ── */
-async function fetchWeather() {
-  try {
-    const url = 'https://api.open-meteo.com/v1/forecast?latitude=51.13&longitude=71.37&current_weather=true&timezone=Asia/Almaty';
-    const res = await fetch(url);
-    const data = await res.json();
-    const el = document.getElementById('weather-temp');
-    if (el) el.textContent = Math.round(data.current_weather.temperature) + '°C';
-  } catch (e) {}
+/* ── Weather (from Simulink ambient temp, updated via poll) ── */
+function updateWeatherFromData(ambientTemp) {
+  const el = document.getElementById('weather-temp');
+  if (el) el.textContent = Number(ambientTemp).toFixed(1) + '°C';
 }
-fetchWeather(); setInterval(fetchWeather, 600000);
 
 /* ── Chart options ── */
 function getChartOpts() {
@@ -264,7 +258,7 @@ function initHydroCharts() {
           pointHoverRadius: 4, pointHoverBackgroundColor: hc,
           pointHoverBorderColor: isLight() ? '#ffffff' : '#0a0a0a', pointHoverBorderWidth: 2 }] },
       options: { ...CHART_OPTS, scales: { ...CHART_OPTS.scales,
-        y: { ...CHART_OPTS.scales.y, min: 0.3, max: 0.8 } } }
+        y: { ...CHART_OPTS.scales.y, min: 0, max: 4 } } }
     });
   }
 
@@ -297,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initHydroCharts();
 
   const hc = getHydroColor();
-  drawGauge(document.getElementById('gauge-pressure'), 0, 0, 64, hc);
+  drawGauge(document.getElementById('gauge-pressure'), 0, 0, 500, hc);
   drawGauge(document.getElementById('gauge-voltage'), 0, 0, 440, hc);
   drawGauge(document.getElementById('gauge-current'), 0, 0, 300, hc);
 
@@ -315,7 +309,7 @@ setInterval(async () => {
     const d = await res.json();
 
     const hc = getHydroColor();
-    drawGauge(document.getElementById('gauge-pressure'), d.pressure, 0, 64, hc);
+    drawGauge(document.getElementById('gauge-pressure'), d.pressure, 0, 500, hc);
     drawGauge(document.getElementById('gauge-voltage'), d.voltage, 0, 440, hc);
     drawGauge(document.getElementById('gauge-current'), d.current, 0, 300, hc);
 
@@ -323,10 +317,24 @@ setInterval(async () => {
     document.getElementById('voltage-val').textContent = Number(d.voltage).toFixed(1);
     document.getElementById('current-val').textContent = Number(d.current).toFixed(1);
 
+    // Generator status on hydro page
+    const genDot = document.getElementById('hydro-gen-dot');
+    const genTxt = document.getElementById('hydro-gen-text');
+    if (d.gen_running) {
+      if (genDot) genDot.className = 'gen-status-dot-hydro running';
+      if (genTxt) genTxt.textContent = 'RUNNING';
+    } else {
+      if (genDot) genDot.className = 'gen-status-dot-hydro standby';
+      if (genTxt) genTxt.textContent = 'STANDBY';
+    }
+
     // Pump state
     const stateEl = document.getElementById('pump-state-val');
     const iconEl = document.querySelector('.pump-icon-wrap');
     const subEl = document.querySelector('.pump-state-sub');
+
+    // Weather from Simulink ambient temp
+    if (d.ambient_temp !== undefined) updateWeatherFromData(d.ambient_temp);
     if (d.pump_state) {
       if (stateEl) { stateEl.textContent = 'RUNNING'; stateEl.classList.remove('pump-state-off'); }
       if (iconEl) iconEl.className = 'pump-icon-wrap pump-on';

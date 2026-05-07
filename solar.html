@@ -139,27 +139,41 @@
       <span class="gauge-subtext">Max rated 100 A</span>
     </div>
 
-    <!-- Battery SOC -->
-    <div class="soc-card">
-      <div class="soc-card-header">
-        <span class="soc-card-label">Battery SOC</span>
-        <span class="soc-pct" id="soc-val">--%</span>
-      </div>
-      <div class="soc-bar-track">
-        <div class="soc-bar-fill" id="soc-bar" style="width:0%"></div>
-      </div>
-      <div class="soc-ticks">
-        <span class="soc-tick">0%</span>
-        <span class="soc-tick">25%</span>
-        <span class="soc-tick">50%</span>
-        <span class="soc-tick">75%</span>
-        <span class="soc-tick">100%</span>
-      </div>
-      <div class="charging-status" id="charging-status">
-        <div class="charging-icon charging-off">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <!-- Battery SOC + RMS side by side on desktop -->
+    <div class="soc-rms-row">
+      <!-- Battery SOC -->
+      <div class="soc-card">
+        <div class="soc-card-header">
+          <span class="soc-card-label">Battery SOC</span>
+          <span class="soc-pct" id="soc-val">--%</span>
         </div>
-        <span>Waiting…</span>
+        <div class="soc-bar-track">
+          <div class="soc-bar-fill" id="soc-bar" style="width:0%"></div>
+        </div>
+        <div class="soc-ticks">
+          <span class="soc-tick">0%</span>
+          <span class="soc-tick">25%</span>
+          <span class="soc-tick">50%</span>
+          <span class="soc-tick">75%</span>
+          <span class="soc-tick">100%</span>
+        </div>
+        <div class="charging-status" id="charging-status">
+          <div class="charging-icon charging-off">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <span>Waiting…</span>
+        </div>
+      </div>
+
+      <!-- RMS Voltage gauge -->
+      <div class="gauge-card rms-gauge-card">
+        <span class="gauge-card-label">RMS Voltage</span>
+        <canvas id="gauge-rms" class="gauge-canvas" width="200" height="125"></canvas>
+        <div class="gauge-value-block">
+          <span class="gauge-value" id="rms-val">--</span>
+          <span class="gauge-unit">V</span>
+        </div>
+        <span class="gauge-subtext">Nominal 240 V</span>
       </div>
     </div>
 
@@ -203,6 +217,13 @@
           <div class="thresh-pair">
             <label>High<input type="number" class="threshold-input" id="thresh-voltage_high" value="250"></label>
             <label>Low<input type="number" class="threshold-input" id="thresh-voltage_low" value="190"></label>
+          </div>
+        </div>
+        <div class="thresh-group">
+          <span class="thresh-group-title">RMS Voltage</span>
+          <div class="thresh-pair">
+            <label>High<input type="number" class="threshold-input" id="thresh-rms_high" value="280"></label>
+            <label>Low<input type="number" class="threshold-input" id="thresh-rms_low" value="200"></label>
           </div>
         </div>
         <div class="thresh-group">

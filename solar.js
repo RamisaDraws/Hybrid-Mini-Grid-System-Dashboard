@@ -15,11 +15,14 @@ function toggleTheme() {
   // Redraw gauges with current values
   const vEl = document.getElementById('voltage-val');
   const cEl = document.getElementById('current-val');
+  const rEl = document.getElementById('rms-val');
   const v = vEl ? parseFloat(vEl.textContent) || 0 : 0;
   const c = cEl ? parseFloat(cEl.textContent) || 0 : 0;
+  const r = rEl ? parseFloat(rEl.textContent) || 0 : 0;
   const sc = getSolarColor();
   drawGauge(document.getElementById('gauge-voltage'), v, 260, sc);
   drawGauge(document.getElementById('gauge-current'), c, 100, sc);
+  drawGauge(document.getElementById('gauge-rms'), r, 500, sc);
   // Rebuild chart
   if (solarChart) {
     solarChart.destroy();
@@ -93,27 +96,13 @@ mobileNav.querySelectorAll('.nav-link').forEach(l =>
   l.addEventListener('click', () => mobileNav.classList.remove('open'))
 );
 
-/* ── Weather API (ambient temp) ── */
-let ambientTemp = -4;
-async function fetchWeather() {
-  try {
-    const url = 'https://api.open-meteo.com/v1/forecast?latitude=51.13&longitude=71.37&current_weather=true&timezone=Asia/Almaty';
-    const res = await fetch(url);
-    const data = await res.json();
-    ambientTemp = Math.round(data.current_weather.temperature);
-    const el = document.getElementById('weather-temp');
-    if (el) el.textContent = `${ambientTemp}°C`;
-    const ambEl = document.getElementById('ambient-temp-val');
-    if (ambEl) ambEl.textContent = `${ambientTemp}°C`;
-    const ambBar = document.getElementById('ambient-temp-bar');
-    if (ambBar) {
-      const pct = Math.max(0, Math.min(100, ((ambientTemp + 30) / 80) * 100));
-      ambBar.style.height = pct + '%';
-    }
-  } catch (e) { console.warn('Weather fetch failed:', e.message); }
+/* ── Weather (from Simulink ambient temp, updated via poll) ── */
+let ambientTemp = 0;
+function updateWeatherFromData(temp) {
+  ambientTemp = temp;
+  const el = document.getElementById('weather-temp');
+  if (el) el.textContent = Number(ambientTemp).toFixed(1) + '°C';
 }
-fetchWeather();
-setInterval(fetchWeather, 600000);
 
 /* ── Chart options ── */
 function getChartOpts() {
@@ -300,6 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sc = getSolarColor();
   drawGauge(document.getElementById('gauge-voltage'), 0, 260, sc);
   drawGauge(document.getElementById('gauge-current'), 0, 100, sc);
+  drawGauge(document.getElementById('gauge-rms'), 0, 500, sc);
 
   loadChartHistory();
   loadThresholds();
@@ -317,10 +307,13 @@ setInterval(async () => {
     const sc = getSolarColor();
     drawGauge(document.getElementById('gauge-voltage'), d.voltage, 260, sc);
     drawGauge(document.getElementById('gauge-current'), d.current, 100, sc);
+    drawGauge(document.getElementById('gauge-rms'), d.rms || 0, 500, sc);
     const vEl = document.getElementById('voltage-val');
     const cEl = document.getElementById('current-val');
+    const rmsEl = document.getElementById('rms-val');
     if (vEl) vEl.textContent = Number(d.voltage).toFixed(1);
     if (cEl) cEl.textContent = Number(d.current).toFixed(1);
+    if (rmsEl) rmsEl.textContent = Number(d.rms || 0).toFixed(1);
 
     // SOC
     const socEl = document.getElementById('soc-val');
@@ -334,7 +327,15 @@ setInterval(async () => {
     if (chargeIcon) chargeIcon.className = 'charging-icon ' + (d.charging ? 'charging-on' : 'charging-off');
     if (chargeText) chargeText.textContent = d.charging ? 'Charging' : 'Not Charging';
 
-    // Temps
+    // Temps — all from Simulink
+    // Ambient temp
+    if (d.temp_ambient !== undefined) {
+      updateWeatherFromData(d.temp_ambient);
+      const ambEl = document.getElementById('ambient-temp-val');
+      if (ambEl) ambEl.textContent = Number(d.temp_ambient).toFixed(1) + '°C';
+      const ambBar = document.getElementById('ambient-temp-bar');
+      if (ambBar) ambBar.style.height = Math.max(0, Math.min(100, ((d.temp_ambient + 30) / 80) * 100)) + '%';
+    }
     const panelEl = document.getElementById('panel-temp-val');
     const moduleEl = document.getElementById('module-temp-val');
     if (panelEl) panelEl.textContent = Number(d.temp_panel).toFixed(1) + '°C';

@@ -83,17 +83,11 @@ mobileNav.querySelectorAll('.nav-link').forEach(l =>
   l.addEventListener('click', () => mobileNav.classList.remove('open'))
 );
 
-/* ── Weather ── */
-async function fetchWeather() {
-  try {
-    const url = 'https://api.open-meteo.com/v1/forecast?latitude=51.13&longitude=71.37&current_weather=true&timezone=Asia/Almaty';
-    const res = await fetch(url);
-    const data = await res.json();
-    const el = document.getElementById('weather-temp');
-    if (el) el.textContent = Math.round(data.current_weather.temperature) + '°C';
-  } catch (e) {}
+/* ── Weather (from Simulink ambient temp, updated via poll) ── */
+function updateWeatherFromData(ambientTemp) {
+  const el = document.getElementById('weather-temp');
+  if (el) el.textContent = Number(ambientTemp).toFixed(1) + '°C';
 }
-fetchWeather(); setInterval(fetchWeather, 600000);
 
 /* ── Chart options ── */
 function getChartOpts() {
@@ -204,7 +198,6 @@ function applyState(d) {
     document.getElementById('bat-current-val').textContent = Number(d.bat_current).toFixed(1);
 
     setVBar('vbar-gen-temp', 'gen-temp-val', (d.gen_temp/200)*100, Number(d.gen_temp).toFixed(1));
-    setVBar('vbar-coolant', 'coolant-val', (d.coolant_temp/200)*100, Number(d.coolant_temp).toFixed(1));
 
     // ATS → Generator
     document.getElementById('ats-grid-badge').className = 'ats-source-badge standby';
@@ -235,7 +228,6 @@ function applyState(d) {
     document.getElementById('bat-current-val').textContent = '0';
 
     setVBar('vbar-gen-temp', 'gen-temp-val', 0, '—');
-    setVBar('vbar-coolant', 'coolant-val', 0, '—');
 
     // ATS → Grid
     document.getElementById('ats-grid-badge').className = 'ats-source-badge active';
@@ -246,9 +238,8 @@ function applyState(d) {
     document.querySelector('#ats-gen-src .ats-icon').className = 'ats-icon ats-icon-standby';
   }
 
-  // Always update fuel/water
+  // Always update fuel
   setVBar('vbar-fuel', 'fuel-val', d.fuel_pct, Number(d.fuel_pct).toFixed(1));
-  setVBar('vbar-water', 'water-val', d.water_pct, Number(d.water_pct).toFixed(1));
 
   // Generator mode (auto/manual)
   const modeBadge = document.getElementById('gen-mode-badge');
@@ -400,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Init standby
   applyState({ running: 0, voltage: 0, current: 0, rpm: 0, frequency: 0,
-    gen_temp: 0, coolant_temp: 0, fuel_pct: 72, water_pct: 55,
+    gen_temp: 0, fuel_pct: 72,
     bat_voltage: 24, bat_current: 0, power_out: 0, load: 35,
     vibration: 0, oil_pressure: 0 });
 
@@ -417,6 +408,9 @@ setInterval(async () => {
     if (handleAuthError(res)) return;
     const d = await res.json();
     applyState(d);
+
+    // Weather from Simulink ambient temp
+    if (d.ambient_temp !== undefined) updateWeatherFromData(d.ambient_temp);
 
     pollCount++;
     if (pollCount % 3 === 0) {

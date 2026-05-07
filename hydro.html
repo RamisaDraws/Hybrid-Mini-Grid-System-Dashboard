@@ -83,7 +83,7 @@
             <circle cx="32" cy="32" r="4" fill="#3ecfcf" opacity="0.9"/>
           </svg>
           <span>IMAGE PLACEHOLDER</span>
-          <span class="placeholder-sub">In-Pipe Micro-Hydropower Turbine — 700 mm Pipeline</span>
+          <span class="placeholder-sub">In-Pipe Micro-Hydropower Turbine — 1000 mm Pipeline</span>
         </div>
       </div>
       <div class="hydro-image-footer">
@@ -108,6 +108,14 @@
       </div>
       <div class="hydro-chart-wrap"><canvas id="chart-hydro-dual"></canvas></div>
     </div>
+
+    <div class="gen-status-card" id="hydro-gen-status">
+      <span class="gen-status-card-label">Generator Status</span>
+      <div class="gen-status-row">
+        <div class="gen-status-dot-hydro standby" id="hydro-gen-dot"></div>
+        <span class="gen-status-text-hydro" id="hydro-gen-text">STANDBY</span>
+      </div>
+    </div>
   </div>
 
   <!-- ════ CENTER ════ -->
@@ -125,9 +133,9 @@
       <canvas id="gauge-pressure" class="gauge-canvas" width="200" height="125"></canvas>
       <div class="gauge-value-block">
         <span class="gauge-value hydro-gauge-val" id="pressure-val">--</span>
-        <span class="gauge-unit">PSI</span>
+        <span class="gauge-unit">kPa</span>
       </div>
-      <span class="gauge-subtext">Nominal 45 PSI</span>
+      <span class="gauge-subtext">Range 0–500 kPa</span>
     </div>
 
     <div class="pump-state-card">
@@ -145,9 +153,8 @@
         </div>
       </div>
       <div class="pump-meta">
-        <div class="pump-meta-item"><span class="pump-meta-label">Pipeline Ø</span><span class="pump-meta-val">700 mm</span></div>
-        <div class="pump-meta-item"><span class="pump-meta-label">Hydraulic Head</span><span class="pump-meta-val">55 m</span></div>
-        <div class="pump-meta-item"><span class="pump-meta-label">Efficiency</span><span class="pump-meta-val">~85%</span></div>
+        <div class="pump-meta-item"><span class="pump-meta-label">Pipeline Ø</span><span class="pump-meta-val">1000 mm</span></div>
+        <div class="pump-meta-item"><span class="pump-meta-label">Efficiency</span><span class="pump-meta-val">90%</span></div>
       </div>
     </div>
 
@@ -171,15 +178,22 @@
       <span class="gauge-subtext">Nominal 250 A</span>
     </div>
 
-    <!-- ═══ THRESHOLD CONTROLS ═══ -->
+    <!-- ═══ THRESHOLD CONTROLS (hardcoded) ═══ -->
     <div class="threshold-card" style="grid-column: 1 / -1;">
-      <span class="threshold-card-label">Threshold Control</span>
+      <span class="threshold-card-label">Operating Limits</span>
       <div class="threshold-grid">
         <div class="thresh-group">
           <span class="thresh-group-title">Water Pressure</span>
           <div class="thresh-pair">
-            <label>High<input type="number" class="threshold-input" id="thresh-pressure_high" value="60"></label>
-            <label>Low<input type="number" class="threshold-input" id="thresh-pressure_low" value="30"></label>
+            <label>Min Operating<input type="number" class="threshold-input" value="296" disabled readonly></label>
+            <span class="thresh-unit-note">kPa</span>
+          </div>
+        </div>
+        <div class="thresh-group">
+          <span class="thresh-group-title">Water Flow Rate</span>
+          <div class="thresh-pair">
+            <label>Min Allowed<input type="number" class="threshold-input" value="1.31" disabled readonly></label>
+            <span class="thresh-unit-note">m³/s</span>
           </div>
         </div>
         <div class="thresh-group">

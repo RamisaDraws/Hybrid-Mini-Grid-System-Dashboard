@@ -97,21 +97,11 @@ function checkAlertSound(alerts) {
   _prevAlertCount = count;
 }
 
-/* ── Weather API (Open-Meteo — free, no key) ── */
-async function fetchWeather() {
-  try {
-    const url = 'https://api.open-meteo.com/v1/forecast?latitude=51.13&longitude=71.37&current_weather=true&timezone=Asia/Almaty';
-    const res = await fetch(url);
-    const data = await res.json();
-    const temp = Math.round(data.current_weather.temperature);
-    const el = document.getElementById('weather-temp');
-    if (el) el.textContent = `${temp}°C`;
-  } catch (e) {
-    console.warn('Weather fetch failed:', e.message);
-  }
+/* ── Weather (from Simulink ambient temp, updated via poll) ── */
+function updateWeatherFromData(ambientTemp) {
+  const el = document.getElementById('weather-temp');
+  if (el) el.textContent = Number(ambientTemp).toFixed(1) + '°C';
 }
-fetchWeather();
-setInterval(fetchWeather, 600000);
 
 /* ── Chart defaults ── */
 function getChartDefaults() {
@@ -327,6 +317,9 @@ setInterval(async () => {
     const res = await fetch('/api/data');
     if (handleAuthError(res)) return;
     const d = await res.json();
+
+    // Weather from Simulink ambient temp
+    if (d.ambient_temp !== undefined) updateWeatherFromData(d.ambient_temp);
 
     // Solar row
     setStatVal('.solar-row .stat-item:nth-child(1) .stat-value', Number(d.solar.voltage).toFixed(1), 'V');

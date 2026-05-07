@@ -22,8 +22,8 @@ os.makedirs(ALERTS_DIR, exist_ok=True)
 # ── In-memory state ──────────────────────────────────────
 _solar = {
     "voltage": 0, "current": 0, "power_out": 0, "load": 0,
-    "soc": 0, "charging": 0,
-    "temp_panel": 0, "temp_module": 0
+    "soc": 0, "charging": 0, "rms": 0,
+    "temp_ambient": 0, "temp_panel": 0, "temp_module": 0
 }
 
 _hydro = {
@@ -35,13 +35,15 @@ _gen = {
     "running": 0,
     "voltage": 0, "current": 0, "power_out": 0, "load": 0,
     "rpm": 0, "frequency": 0,
-    "gen_temp": 0, "coolant_temp": 0,
-    "fuel_pct": 72, "water_pct": 55,
+    "gen_temp": 0,
+    "fuel_pct": 72,
     "bat_voltage": 24, "bat_current": 0,
     "oil_pressure": 0, "vibration": 0,
-    "fault_voltage": 0, "fault_rpm": 0, "fault_coolant": 0,
-    "fault_fuel": 0, "fault_water": 0, "fault_bat_voltage": 0,
+    "fault_voltage": 0, "fault_current": 0,
+    "fault_rpm_low": 0, "fault_rpm_high": 0,
+    "fault_fuel": 0,
     "fault_oil_pressure": 0, "fault_vibration": 0,
+    "fault_gen_temp": 0,
     "mode":0
 }
 
@@ -53,6 +55,8 @@ _SOLAR_PREFIX = {
     "solar_voltage": "voltage", "solar_current": "current",
     "solar_power": "power_out", "solar_load": "load",
     "solar_soc": "soc", "solar_charging": "charging",
+    "solar_rms": "rms",
+    "solar_temp_ambient": "temp_ambient",
     "solar_temp_panel": "temp_panel", "solar_temp_module": "temp_module",
 }
 
@@ -68,14 +72,15 @@ _GEN_PREFIX = {
     "gen_voltage": "voltage", "gen_current": "current",
     "gen_power": "power_out", "gen_load": "load",
     "gen_rpm": "rpm", "gen_frequency": "frequency",
-    "gen_temp": "gen_temp", "gen_coolant": "coolant_temp",
-    "gen_fuel": "fuel_pct", "gen_water": "water_pct",
+    "gen_temp": "gen_temp",
+    "gen_fuel": "fuel_pct",
     "gen_bat_voltage": "bat_voltage", "gen_bat_current": "bat_current",
     "gen_oil_pressure": "oil_pressure", "gen_vibration": "vibration",
-    "gen_fault_voltage": "fault_voltage", "gen_fault_rpm": "fault_rpm",
-    "gen_fault_coolant": "fault_coolant", "gen_fault_fuel": "fault_fuel",
-    "gen_fault_water": "fault_water", "gen_fault_bat_voltage": "fault_bat_voltage",
+    "gen_fault_voltage": "fault_voltage", "gen_fault_current": "fault_current",
+    "gen_fault_rpm_low": "fault_rpm_low", "gen_fault_rpm_high": "fault_rpm_high",
+    "gen_fault_fuel": "fault_fuel",
     "gen_fault_oil_pressure": "fault_oil_pressure", "gen_fault_vibration": "fault_vibration",
+    "gen_fault_gen_temp": "fault_gen_temp",
     "gen_mode":"mode",
 }
 
@@ -93,13 +98,15 @@ MAX_CHART_POINTS = 16
 _thresholds = {
     "solar": {
         "voltage_high": 250, "voltage_low": 190,
+        "rms_high": 280, "rms_low": 200,
         "soc_low": 20,
         "temp_ambient_high": 45, "temp_ambient_low": -30,
         "temp_panel_high": 75, "temp_panel_low": -20,
         "temp_module_high": 80, "temp_module_low": -20
     },
     "hydro": {
-        "pressure_high": 60, "pressure_low": 30,
+        "pressure_low": 296,
+        "flow_rate_low": 1.31,
         "voltage_high": 250, "voltage_low": 190
     },
     "generator": {}
@@ -213,7 +220,7 @@ def _check_range_dedup(source, label, value, key_high, key_low):
             _add_alert(source, f"{label} LOW — {value:.1f} (threshold: {lo})", "warn")
             _active_conditions[cond_key] = True
         elif not currently_low and was_low:
-            _add_alert(source, f"{label} returned to normal — {value:.1f} (was below {lo})", "info")
+            _add_alert(source, f"{label} returned to normal — {value:.1f} (threshold: {lo})", "info")
             _active_conditions[cond_key] = False
 
 def _check_state_change(key, new_val, on_msg, off_msg, source):
@@ -229,6 +236,8 @@ def _generate_alerts():
     # Solar
     _check_range_dedup("solar", "Solar Voltage", _solar["voltage"],
                        "voltage_high", "voltage_low")
+    _check_range_dedup("solar", "Solar RMS", _solar["rms"],
+                       "rms_high", "rms_low")
     _check_state_change("charging", _solar["charging"],
                         "Battery charging", "Battery not charging", "solar")
 
@@ -245,6 +254,9 @@ def _generate_alerts():
             _add_alert("solar", f"Battery SOC normal — {_solar['soc']}% (was below {soc_lo}%)", "info")
             _active_conditions[cond_key] = False
 
+    # Ambient temp
+    _check_range_dedup("solar", "Ambient Temp", _solar["temp_ambient"],
+                       "temp_ambient_high", "temp_ambient_low")
     # Panel temp
     _check_range_dedup("solar", "Panel Temp", _solar["temp_panel"],
                        "temp_panel_high", "temp_panel_low")
@@ -252,9 +264,12 @@ def _generate_alerts():
     _check_range_dedup("solar", "Module Temp", _solar["temp_module"],
                        "temp_module_high", "temp_module_low")
 
-    # Hydro
+    # Hydro — pressure low only (hardcoded 296 kPa)
     _check_range_dedup("hydro", "Water Pressure", _hydro["pressure"],
-                       "pressure_high", "pressure_low")
+                       None, "pressure_low")
+    # Hydro — flow rate low only (hardcoded 1.31 m³/s)
+    _check_range_dedup("hydro", "Water Flow Rate", _hydro["flow_rate"],
+                       None, "flow_rate_low")
     _check_range_dedup("hydro", "Hydro Voltage", _hydro["voltage"],
                        "voltage_high", "voltage_low")
     _check_state_change("pump_state", _hydro["pump_state"],
@@ -263,11 +278,11 @@ def _generate_alerts():
     # Generator — binary fault flags from Simulink
     _gen_fault_map = {
         "fault_voltage":      ("Generator Voltage",  _gen["voltage"],      "V"),
-        "fault_rpm":          ("Engine RPM",          _gen["rpm"],          "RPM"),
-        "fault_coolant":      ("Coolant Temp",        _gen["coolant_temp"], "°C"),
+        "fault_current":      ("Generator Current",   _gen["current"],      "A"),
+        "fault_rpm_low":      ("Engine RPM Low",      _gen["rpm"],          "RPM"),
+        "fault_rpm_high":     ("Engine RPM High",     _gen["rpm"],          "RPM"),
         "fault_fuel":         ("Fuel Level",          _gen["fuel_pct"],     "%"),
-        "fault_water":        ("Water Level",         _gen["water_pct"],    "%"),
-        "fault_bat_voltage":  ("Battery Voltage",     _gen["bat_voltage"],  "V"),
+        "fault_gen_temp":     ("Generator Temp",      _gen["gen_temp"],     "°C"),
         "fault_oil_pressure": ("Oil Pressure",        _gen["oil_pressure"], "PSI"),
         "fault_vibration":    ("Vibration",           _gen["vibration"],    "mm/s"),
     }
@@ -410,7 +425,8 @@ def api_data():
     with _lock:
         today = _load_alerts_for_date()
         return jsonify(solar=dict(_solar), hydro=dict(_hydro),
-                       gen=dict(_gen), alerts=today)
+                       gen=dict(_gen), alerts=today,
+                       ambient_temp=_solar["temp_ambient"])
 
 @app.route('/api/solar')
 @login_required
@@ -426,7 +442,8 @@ def api_hydro():
     with _lock:
         today = _load_alerts_for_date()
         ha = [a for a in today if a.get("source") == "hydro"]
-        return jsonify(**_hydro, alerts=ha)
+        return jsonify(**_hydro, gen_running=_gen["running"],
+                       ambient_temp=_solar["temp_ambient"], alerts=ha)
 
 @app.route('/api/generator')
 @login_required
@@ -434,7 +451,7 @@ def api_generator():
     with _lock:
         today = _load_alerts_for_date()
         ga = [a for a in today if a.get("source") == "generator"]
-        return jsonify(**_gen, alerts=ga)
+        return jsonify(**_gen, ambient_temp=_solar["temp_ambient"], alerts=ga)
 
 # ══════════════════════════════════════════════════════════
 #  API — ALERTS BY DATE

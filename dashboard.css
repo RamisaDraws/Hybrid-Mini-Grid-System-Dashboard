@@ -159,7 +159,7 @@ body {
 
 .title-main {
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   color: var(--text);
   letter-spacing: 0.03em;
   margin: 0.5rem 0;
@@ -861,7 +861,7 @@ body {
 
 .thresh-group-title {
   font-family: 'Syne', sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.9rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;

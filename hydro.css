@@ -160,7 +160,7 @@
 
 .hydro-chart-title {
   font-family: 'Syne', sans-serif;
-  font-size: 0.88rem;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -258,12 +258,12 @@
 
 .gauge-card-label {
   font-family: 'Syne', sans-serif;
-  font-size: 0.75rem;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-muted);
-  align-self: flex-start;
+  align-self: center;
 }
 
 .gauge-canvas {
@@ -283,7 +283,7 @@
 
 .hydro-gauge-val {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1.5rem;
+  font-size: 1.7rem;
   font-weight: 500;
   line-height: 1;
   color: var(--hydro);
@@ -291,7 +291,7 @@
 
 .gauge-unit {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1rem;
+  font-size: 1.2rem;
   color: var(--hydro);
   letter-spacing: 0.04em;
 }
@@ -317,7 +317,7 @@
 
 .pump-state-label {
   font-family: 'Syne', sans-serif;
-  font-size: 0.75rem;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -381,8 +381,8 @@
 }
 
 .pump-state-sub {
-  font-size: 0.75rem;
-  color: var(--text-dim);
+  font-size: 1rem;
+  color: var(--text-muted);
   letter-spacing: 0.04em;
   line-height: 1.4;
 }
@@ -390,7 +390,7 @@
 /* Pipeline metadata grid */
 .pump-meta {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
 }
 
@@ -405,16 +405,17 @@
 }
 
 .pump-meta-label {
-  font-size: 0.68rem;
+  font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-dim);
+  color: var(--text-muted);
 }
 
 .pump-meta-val {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.88rem;
+  font-size: 1.5rem;
   font-weight: 500;
+  margin-top: 10px;
   color: var(--hydro);
 }
 
@@ -668,4 +669,66 @@ body.light .hydro-image-inner {
 }
 body.light .hydro-image-placeholder {
   background: linear-gradient(135deg, #e8eff1 0%, #d8e8ea 60%, #e8eff1 100%);
+}
+/* ── Generator status card on hydro page ── */
+.gen-status-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.gen-status-card-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.gen-status-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.gen-status-dot-hydro {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.gen-status-dot-hydro.standby {
+  background: var(--text-dim, #4a6080);
+  box-shadow: none;
+}
+.gen-status-dot-hydro.running {
+  background: var(--gen, #ff6b6b);
+  box-shadow: 0 0 8px var(--gen, #ff6b6b);
+  animation: genPulseHydro 1.8s ease-in-out infinite;
+}
+@keyframes genPulseHydro {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.gen-status-text-hydro {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text);
+}
+
+/* ── Threshold unit note ── */
+.thresh-unit-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  padding-left: 0.3rem;
+}
+
+body.light .gen-status-card {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
