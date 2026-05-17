@@ -13,6 +13,7 @@ import math
 
 # ── Configuration ────────────────────────────────────────
 SERVER     = "http://127.0.0.1:5000"
+#change server adress if remotely deployed to render
 POLL       = 0.5   # seconds between loops
 
 # File paths
