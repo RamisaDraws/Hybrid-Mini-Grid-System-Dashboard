@@ -12,22 +12,14 @@ function applyTheme(theme) {
 }
 function toggleTheme() {
   applyTheme(getTheme() === 'dark' ? 'light' : 'dark');
-  // Redraw gauges with current values
-  const vEl = document.getElementById('voltage-val');
-  const cEl = document.getElementById('current-val');
-  const rEl = document.getElementById('rms-val');
-  const v = vEl ? parseFloat(vEl.textContent) || 0 : 0;
-  const c = cEl ? parseFloat(cEl.textContent) || 0 : 0;
-  const r = rEl ? parseFloat(rEl.textContent) || 0 : 0;
   const sc = getSolarColor();
+  const v = parseFloat(document.getElementById('voltage-val').textContent) || 0;
+  const ir = parseFloat(document.getElementById('irradiance-val').textContent) || 0;
+  const r = parseFloat(document.getElementById('rms-val').textContent) || 0;
   drawGauge(document.getElementById('gauge-voltage'), v, 260, sc);
-  drawGauge(document.getElementById('gauge-current'), c, 100, sc);
+  drawGauge(document.getElementById('gauge-irradiance'), ir, 2000, sc);
   drawGauge(document.getElementById('gauge-rms'), r, 500, sc);
-  // Rebuild chart
-  if (solarChart) {
-    solarChart.destroy();
-    initSolarChart();
-  }
+  if (solarChart) { solarChart.destroy(); initSolarChart(); }
 }
 function isLight() { return document.body.classList.contains('light'); }
 function getSolarColor() { return getComputedStyle(document.body).getPropertyValue('--solar').trim(); }
@@ -43,7 +35,7 @@ async function doLogout() {
   window.location.href = '/login.html';
 }
 
-/* ── Live clock (Karazhar = Asia/Almaty) ── */
+/* ── Live clock ── */
 (function () {
   const pad = n => String(n).padStart(2, '0');
   function tick() {
@@ -63,28 +55,21 @@ async function doLogout() {
 
 /* ── Alert audio ── */
 let _prevAlertCount = -1;
-
 function playAlertBeep() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.value = 880;
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine'; osc.frequency.value = 880;
     gain.gain.setValueAtTime(0.18, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3);
   } catch (e) {}
 }
-
 function checkAlertSound(alerts) {
   const count = (alerts || []).length;
-  if (_prevAlertCount >= 0 && count > _prevAlertCount) {
-    playAlertBeep();
-  }
+  if (_prevAlertCount >= 0 && count > _prevAlertCount) playAlertBeep();
   _prevAlertCount = count;
 }
 
@@ -95,14 +80,6 @@ hamburgerBtn.addEventListener('click', () => mobileNav.classList.toggle('open'))
 mobileNav.querySelectorAll('.nav-link').forEach(l =>
   l.addEventListener('click', () => mobileNav.classList.remove('open'))
 );
-
-/* ── Weather (from Simulink ambient temp, updated via poll) ── */
-let ambientTemp = 0;
-function updateWeatherFromData(temp) {
-  ambientTemp = temp;
-  const el = document.getElementById('weather-temp');
-  if (el) el.textContent = Number(ambientTemp).toFixed(1) + '°C';
-}
 
 /* ── Chart options ── */
 function getChartOpts() {
@@ -226,7 +203,7 @@ async function onAlertDateChange() {
   } catch (e) {}
 }
 
-/* ── Load chart history from server ── */
+/* ── Load chart history ── */
 async function loadChartHistory() {
   try {
     const res = await fetch('/api/chart_history');
@@ -238,14 +215,10 @@ async function loadChartHistory() {
       const sl = pad(h.solar_load, 16);
       const ts = pad(h.timestamps, 16);
       for (let i = 0; i < 16; i++) {
-        powerData[i] = sp[i];
-        loadData[i] = sl[i];
+        powerData[i] = sp[i]; loadData[i] = sl[i];
         if (ts[i]) chartLabels[i] = ts[i];
       }
-      if (solarChart) {
-        solarChart.data.labels = chartLabels;
-        solarChart.update('none');
-      }
+      if (solarChart) { solarChart.data.labels = chartLabels; solarChart.update('none'); }
     }
   } catch (e) { console.warn('Chart history load failed'); }
 }
@@ -261,8 +234,6 @@ function initSolarChart() {
     gP.addColorStop(0, sc + '48'); gP.addColorStop(1, sc + '00');
     const gL = c.createLinearGradient(0, 0, 0, 220);
     gL.addColorStop(0, gc + '30'); gL.addColorStop(1, gc + '00');
-    const CHART_OPTS = getChartOpts();
-
     solarChart = new Chart(c, {
       type: 'line',
       data: {
@@ -278,19 +249,17 @@ function initSolarChart() {
             pointHoverBorderColor: isLight() ? '#ffffff' : '#0a0a0a', pointHoverBorderWidth: 2 }
         ]
       },
-      options: CHART_OPTS
+      options: getChartOpts()
     });
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   initSolarChart();
-
   const sc = getSolarColor();
   drawGauge(document.getElementById('gauge-voltage'), 0, 260, sc);
-  drawGauge(document.getElementById('gauge-current'), 0, 100, sc);
+  drawGauge(document.getElementById('gauge-irradiance'), 0, 2000, sc);
   drawGauge(document.getElementById('gauge-rms'), 0, 500, sc);
-
   loadChartHistory();
   loadThresholds();
   loadAlertDates();
@@ -306,14 +275,12 @@ setInterval(async () => {
 
     const sc = getSolarColor();
     drawGauge(document.getElementById('gauge-voltage'), d.voltage, 260, sc);
-    drawGauge(document.getElementById('gauge-current'), d.current, 100, sc);
+    drawGauge(document.getElementById('gauge-irradiance'), d.irradiance || 0, 2000, sc);
     drawGauge(document.getElementById('gauge-rms'), d.rms || 0, 500, sc);
-    const vEl = document.getElementById('voltage-val');
-    const cEl = document.getElementById('current-val');
-    const rmsEl = document.getElementById('rms-val');
-    if (vEl) vEl.textContent = Number(d.voltage).toFixed(1);
-    if (cEl) cEl.textContent = Number(d.current).toFixed(1);
-    if (rmsEl) rmsEl.textContent = Number(d.rms || 0).toFixed(1);
+
+    document.getElementById('voltage-val').textContent = Number(d.voltage).toFixed(1);
+    document.getElementById('irradiance-val').textContent = Number(d.irradiance || 0).toFixed(0);
+    document.getElementById('rms-val').textContent = Number(d.rms || 0).toFixed(1);
 
     // SOC
     const socEl = document.getElementById('soc-val');
@@ -327,24 +294,11 @@ setInterval(async () => {
     if (chargeIcon) chargeIcon.className = 'charging-icon ' + (d.charging ? 'charging-on' : 'charging-off');
     if (chargeText) chargeText.textContent = d.charging ? 'Charging' : 'Not Charging';
 
-    // Temps — all from Simulink
-    // Ambient temp
-    if (d.temp_ambient !== undefined) {
-      updateWeatherFromData(d.temp_ambient);
-      const ambEl = document.getElementById('ambient-temp-val');
-      if (ambEl) ambEl.textContent = Number(d.temp_ambient).toFixed(1) + '°C';
-      const ambBar = document.getElementById('ambient-temp-bar');
-      if (ambBar) ambBar.style.height = Math.max(0, Math.min(100, ((d.temp_ambient + 30) / 80) * 100)) + '%';
-    }
+    // Panel temp
     const panelEl = document.getElementById('panel-temp-val');
-    const moduleEl = document.getElementById('module-temp-val');
     if (panelEl) panelEl.textContent = Number(d.temp_panel).toFixed(1) + '°C';
-    if (moduleEl) moduleEl.textContent = Number(d.temp_module).toFixed(1) + '°C';
-
     const panelBar = document.getElementById('panel-temp-bar');
     if (panelBar) panelBar.style.height = Math.max(0, Math.min(100, ((d.temp_panel + 20) / 100) * 100)) + '%';
-    const moduleBar = document.getElementById('module-temp-bar');
-    if (moduleBar) moduleBar.style.height = Math.max(0, Math.min(100, ((d.temp_module + 20) / 100) * 100)) + '%';
 
     // Rolling chart
     pollCount++;
@@ -354,19 +308,17 @@ setInterval(async () => {
       if (solarChart) solarChart.update('none');
     }
 
-    // Alerts — only update if dropdown shows today
+    // Alerts
     const sel = document.getElementById('alert-date-select');
     const today = new Date().toISOString().slice(0, 10);
     if (!sel || sel.value === today) {
       checkAlertSound(d.alerts);
       renderAlerts(d.alerts || []);
     }
-  } catch (e) {
-    console.warn('Bridge not connected:', e.message);
-  }
-}, 2000);
+  } catch (e) { console.warn('Bridge not connected:', e.message); }
+}, 1000);
 
-/* ── Threshold controls ── */
+/* ── Thresholds ── */
 async function loadThresholds() {
   try {
     const res = await fetch('/api/thresholds/solar');

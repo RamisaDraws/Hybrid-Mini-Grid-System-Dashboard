@@ -1,6 +1,6 @@
 /* ════════════════════════════════════════════════
-   generator.js
-   Karazhar Minigrid — Main Generator Page (Live)
+   pump_gen.js
+   Karazhar Minigrid — Pump Generator Page (Live)
    ════════════════════════════════════════════════ */
 
 /* ── Theme ── */
@@ -15,7 +15,7 @@ function toggleTheme() {
   if (dualChart) { dualChart.destroy(); dualChart = null; initGenChart(); }
 }
 function isLight() { return document.body.classList.contains('light'); }
-function getGenColor() { return getComputedStyle(document.body).getPropertyValue('--gen').trim(); }
+function getGenColor() { return getComputedStyle(document.body).getPropertyValue('--pgen').trim(); }
 applyTheme(getTheme());
 
 /* ── Auth ── */
@@ -188,11 +188,8 @@ function applyState(d) {
     setVBar('vbar-gen-temp', 'gen-temp-val', (d.gen_temp / 200) * 100, Number(d.gen_temp).toFixed(1));
 
     // ATS → Generator
-    document.getElementById('ats-grid-badge').className = 'ats-source-badge standby';
-    document.getElementById('ats-grid-badge').textContent = 'STANDBY';
     document.getElementById('ats-gen-badge').className = 'ats-source-badge running';
     document.getElementById('ats-gen-badge').textContent = 'ACTIVE';
-    document.querySelector('#ats-grid .ats-icon').className = 'ats-icon ats-icon-standby';
     document.querySelector('#ats-gen-src .ats-icon').className = 'ats-icon ats-icon-running';
   } else {
     if (dot) dot.className = 'gen-status-dot standby';
@@ -218,11 +215,8 @@ function applyState(d) {
     setVBar('vbar-gen-temp', 'gen-temp-val', 0, '—');
 
     // ATS → Grid
-    document.getElementById('ats-grid-badge').className = 'ats-source-badge active';
-    document.getElementById('ats-grid-badge').textContent = 'ACTIVE';
     document.getElementById('ats-gen-badge').className = 'ats-source-badge standby';
     document.getElementById('ats-gen-badge').textContent = 'STANDBY';
-    document.querySelector('#ats-grid .ats-icon').className = 'ats-icon ats-icon-active';
     document.querySelector('#ats-gen-src .ats-icon').className = 'ats-icon ats-icon-standby';
   }
 
@@ -307,7 +301,7 @@ async function onAlertDateChange() {
   const sel = document.getElementById('alert-date-select');
   if (!sel) return;
   try {
-    const res = await fetch(`/api/alerts/${sel.value}?source=generator`);
+    const res = await fetch(`/api/alerts/${sel.value}?source=pgen`);
     if (handleAuthError(res)) return;
     const data = await res.json();
     renderAlerts(data.alerts || []);
@@ -320,10 +314,10 @@ async function loadChartHistory() {
     const res = await fetch('/api/chart_history');
     if (handleAuthError(res)) return;
     const h = await res.json();
-    if (h.gen_power && h.gen_power.length > 0) {
+    if (h.pgen_power && h.pgen_power.length > 0) {
       const pad = (arr, n) => { const a = arr.slice(-n); while (a.length < n) a.unshift(0); return a; };
-      const gp = pad(h.gen_power, 16);
-      const gl = pad(h.gen_load || [], 16);
+      const gp = pad(h.pgen_power, 16);
+      const gl = pad(h.pgen_load || [], 16);
       const ts = pad(h.timestamps, 16);
       for (let i = 0; i < 16; i++) {
         powerOutData[i] = gp[i]; loadDemandData[i] = gl[i];
@@ -365,7 +359,7 @@ function initGenChart() {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('gen-toggle-btn').addEventListener('click', async () => {
     try {
-      const endpoint = _currentRunning ? '/api/gen_shutdown' : '/api/gen_start';
+      const endpoint = _currentRunning ? '/api/pgen_shutdown' : '/api/pgen_start';
       const res = await fetch(endpoint, { method: 'POST' });
       if (handleAuthError(res)) return;
       if (res.status === 403) {
@@ -390,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
 let pollCount = 0;
 setInterval(async () => {
   try {
-    const res = await fetch('/api/generator');
+    const res = await fetch('/api/pgen');
     if (handleAuthError(res)) return;
     const d = await res.json();
     applyState(d);

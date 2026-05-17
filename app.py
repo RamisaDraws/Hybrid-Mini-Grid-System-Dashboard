@@ -21,50 +21,80 @@ os.makedirs(ALERTS_DIR, exist_ok=True)
 
 # ── In-memory state ──────────────────────────────────────
 _solar = {
-    "voltage": 0, "current": 0, "power_out": 0, "load": 0,
-    "soc": 0, "charging": 0, "rms": 0,
-    "temp_ambient": 0, "temp_panel": 0, "temp_module": 0
+    "voltage": 0, "irradiance": 0, "power_out": 0, "load": 0,
+    "soc": 0, "charging": 0, "rms": 0, "temp_panel": 0
 }
 
 _hydro = {
     "voltage": 0, "current": 0, "power_out": 0, "load": 0,
-    "flow_rate": 0, "pressure": 0, "pump_state": 0
+    "flow_rate": 0, "pressure": 0, "pump_state": 0, "powerbank": 0
 }
 
-_gen = {
+# Pump Generator (powers the water pump)
+_pgen = {
     "running": 0,
     "voltage": 0, "current": 0, "power_out": 0, "load": 0,
-    "rpm": 0, "frequency": 0,
-    "gen_temp": 0,
+    "rpm": 0, "frequency": 0, "gen_temp": 0,
     "fuel_pct": 72,
     "bat_voltage": 24, "bat_current": 0,
     "oil_pressure": 0, "vibration": 0,
     "fault_voltage": 0, "fault_current": 0,
     "fault_rpm_low": 0, "fault_rpm_high": 0,
-    "fault_fuel": 0,
+    "fault_fuel": 0, "fault_temp": 0,
     "fault_oil_pressure": 0, "fault_vibration": 0,
-    "fault_gen_temp": 0,
-    "mode":0
+    "fault_reset": 0,
+    "mode_auto": 0, "mode_manual": 0, "mode_off": 1,
 }
 
+# Main Generator (backup when hydro can't meet demand)
+_gen = {
+    "running": 0,
+    "voltage": 0, "current": 0, "power_out": 0, "load": 0,
+    "rpm": 0, "frequency": 0, "gen_temp": 0,
+    "fuel_pct": 72,
+    "bat_voltage": 24, "bat_current": 0,
+    "oil_pressure": 0, "vibration": 0,
+    "fault_voltage": 0, "fault_current": 0,
+    "fault_rpm_low": 0, "fault_rpm_high": 0,
+    "fault_fuel": 0, "fault_temp": 0,
+    "fault_oil_pressure": 0, "fault_vibration": 0,
+    "fault_reset": 0,
+    "mode_auto": 0, "mode_manual": 0, "mode_off": 1,
+}
+
+_pgen_pending = {"cmd": ""}
 _gen_pending = {"cmd": ""}
 
-# ── Prefixed key → (target dict field) mapping ───────────
-# Matches bridge.py / demo_push.py prefixed keys
+# ── Prefixed key → (target dict, field) mapping ─────────
 _SOLAR_PREFIX = {
-    "solar_voltage": "voltage", "solar_current": "current",
+    "solar_voltage": "voltage", "solar_irradiance": "irradiance",
     "solar_power": "power_out", "solar_load": "load",
     "solar_soc": "soc", "solar_charging": "charging",
-    "solar_rms": "rms",
-    "solar_temp_ambient": "temp_ambient",
-    "solar_temp_panel": "temp_panel", "solar_temp_module": "temp_module",
+    "solar_rms": "rms", "solar_temp_panel": "temp_panel",
 }
 
 _HYDRO_PREFIX = {
     "hydro_voltage": "voltage", "hydro_current": "current",
     "hydro_power": "power_out", "hydro_load": "load",
     "hydro_flow_rate": "flow_rate", "hydro_pressure": "pressure",
-    "hydro_pump_state": "pump_state",
+    "hydro_pump_state": "pump_state", "hydro_powerbank": "powerbank",
+}
+
+_PGEN_PREFIX = {
+    "pgen_running": "running",
+    "pgen_voltage": "voltage", "pgen_current": "current",
+    "pgen_power": "power_out", "pgen_load": "load",
+    "pgen_rpm": "rpm", "pgen_frequency": "frequency",
+    "pgen_temp": "gen_temp",
+    "pgen_fuel": "fuel_pct",
+    "pgen_bat_voltage": "bat_voltage", "pgen_bat_current": "bat_current",
+    "pgen_oil_pressure": "oil_pressure", "pgen_vibration": "vibration",
+    "pgen_fault_voltage": "fault_voltage", "pgen_fault_current": "fault_current",
+    "pgen_fault_rpm_low": "fault_rpm_low", "pgen_fault_rpm_high": "fault_rpm_high",
+    "pgen_fault_fuel": "fault_fuel", "pgen_fault_temp": "fault_temp",
+    "pgen_fault_oil_pressure": "fault_oil_pressure", "pgen_fault_vibration": "fault_vibration",
+    "pgen_fault_reset": "fault_reset",
+    "pgen_mode_auto": "mode_auto", "pgen_mode_manual": "mode_manual", "pgen_mode_off": "mode_off",
 }
 
 _GEN_PREFIX = {
@@ -78,18 +108,19 @@ _GEN_PREFIX = {
     "gen_oil_pressure": "oil_pressure", "gen_vibration": "vibration",
     "gen_fault_voltage": "fault_voltage", "gen_fault_current": "fault_current",
     "gen_fault_rpm_low": "fault_rpm_low", "gen_fault_rpm_high": "fault_rpm_high",
-    "gen_fault_fuel": "fault_fuel",
+    "gen_fault_fuel": "fault_fuel", "gen_fault_temp": "fault_temp",
     "gen_fault_oil_pressure": "fault_oil_pressure", "gen_fault_vibration": "fault_vibration",
-    "gen_fault_gen_temp": "fault_gen_temp",
-    "gen_mode":"mode",
+    "gen_fault_reset": "fault_reset",
+    "gen_mode_auto": "mode_auto", "gen_mode_manual": "mode_manual", "gen_mode_off": "mode_off",
 }
 
-# ── Chart history (server-side rolling arrays for tab-switch persistence) ─
+# ── Chart history (server-side rolling arrays) ───────────
 _chart_history = {
     "solar_power": [], "solar_load": [],
     "hydro_power": [], "hydro_load": [], "hydro_flow": [],
+    "pgen_power": [], "pgen_load": [],
     "gen_power": [], "gen_load": [],
-    "overview_solar": [], "overview_hydro": [], "overview_gen": [],
+    "overview_solar": [], "overview_hydro": [], "overview_pgen": [], "overview_gen": [],
     "timestamps": [],
 }
 MAX_CHART_POINTS = 16
@@ -100,23 +131,27 @@ _thresholds = {
         "voltage_high": 250, "voltage_low": 190,
         "rms_high": 280, "rms_low": 200,
         "soc_low": 20,
-        "temp_ambient_high": 45, "temp_ambient_low": -30,
+        "irradiance_high": 1870, "irradiance_low": 900,
         "temp_panel_high": 75, "temp_panel_low": -20,
-        "temp_module_high": 80, "temp_module_low": -20
     },
     "hydro": {
         "pressure_low": 296,
         "flow_rate_low": 1.31,
-        "voltage_high": 250, "voltage_low": 190
+        "voltage_high": 250, "voltage_low": 190,
     },
-    "generator": {}
+    "pgen": {},
+    "generator": {},
 }
 
 # ── Alert dedup: tracks which conditions are currently active ─
 _active_conditions = {}
-_prev_states = {"charging": None, "pump_state": None, "gen_running": None}
+_prev_states = {
+    "charging": None, "pump_state": None,
+    "pgen_running": None, "gen_running": None,
+    "pgen_fault_reset": None, "gen_fault_reset": None,
+}
 
-# ── In-memory alert cache (avoids disk read on every /api/data call) ─
+# ── In-memory alert cache ────────────────────────────────
 _alerts_cache = []
 _alerts_cache_date = None
 
@@ -132,11 +167,9 @@ def _alert_file(date_str=None):
 def _load_alerts_for_date(date_str=None):
     global _alerts_cache, _alerts_cache_date
     today = _today_str()
-    # For today — use in-memory cache, no disk read
     if date_str is None or date_str == today:
         if _alerts_cache_date == today:
             return list(_alerts_cache)
-        # First call of the day — load from disk and populate cache
         path = _alert_file(today)
         if not os.path.exists(path):
             _alerts_cache = []
@@ -151,7 +184,6 @@ def _load_alerts_for_date(date_str=None):
             _alerts_cache = []
             _alerts_cache_date = today
             return []
-    # Past dates — read from disk (infrequent, triggered by date dropdown only)
     path = _alert_file(date_str)
     if not os.path.exists(path):
         return []
@@ -164,12 +196,10 @@ def _load_alerts_for_date(date_str=None):
 def _save_alert(alert):
     global _alerts_cache, _alerts_cache_date
     today = _today_str()
-    # Update in-memory cache immediately
     if _alerts_cache_date != today:
         _alerts_cache = []
         _alerts_cache_date = today
     _alerts_cache.append(alert)
-    # Write to disk asynchronously to avoid blocking the request thread
     path = _alert_file()
     try:
         with open(path, 'w') as f:
@@ -195,7 +225,7 @@ def _get_available_dates():
     dates.sort(reverse=True)
     return dates
 
-# ── Status-change alert helpers ──────────────────────────
+# ── Alert helpers ────────────────────────────────────────
 def _check_range_dedup(source, label, value, key_high, key_low):
     t = _thresholds[source]
     hi = t.get(key_high)
@@ -232,16 +262,57 @@ def _check_state_change(key, new_val, on_msg, off_msg, source):
             _add_alert(source, off_msg, "info")
     _prev_states[key] = new_val
 
+def _generate_gen_fault_alerts(gen_dict, source_label):
+    """Generate fault alerts for a generator (pgen or gen)."""
+    _gen_fault_map = {
+        "fault_voltage":      ("Voltage",        gen_dict["voltage"],      "V"),
+        "fault_current":      ("Current",         gen_dict["current"],      "A"),
+        "fault_rpm_low":      ("RPM Low",         gen_dict["rpm"],          "RPM"),
+        "fault_rpm_high":     ("RPM High",        gen_dict["rpm"],          "RPM"),
+        "fault_fuel":         ("Fuel Level",      gen_dict["fuel_pct"],     "%"),
+        "fault_temp":         ("Temperature",     gen_dict["gen_temp"],     "°C"),
+        "fault_oil_pressure": ("Oil Pressure",    gen_dict["oil_pressure"], "PSI"),
+        "fault_vibration":    ("Vibration",       gen_dict["vibration"],    "mm/s"),
+    }
+    for fault_key, (label, value, unit) in _gen_fault_map.items():
+        cond_key = f"{source_label}:{fault_key}"
+        is_fault = bool(gen_dict.get(fault_key, 0))
+        was_fault = _active_conditions.get(cond_key, False)
+        if is_fault and not was_fault:
+            _add_alert(source_label, f"{label} abnormal — {value:.1f} {unit}", "warn")
+            _active_conditions[cond_key] = True
+        elif not is_fault and was_fault:
+            _add_alert(source_label, f"{label} returned to normal — {value:.1f} {unit}", "info")
+            _active_conditions[cond_key] = False
+
+def _check_fault_reset(gen_dict, source_label, state_key):
+    """Check if fault_reset was triggered (rising edge)."""
+    is_reset = bool(gen_dict.get("fault_reset", 0))
+    was_reset = _prev_states.get(state_key, False)
+    if is_reset and not was_reset:
+        _add_alert(source_label, "Fault reset triggered — all faults cleared", "info")
+        keys_to_clear = [k for k in _active_conditions if k.startswith(f"{source_label}:fault_")]
+        for k in keys_to_clear:
+            _active_conditions[k] = False
+    _prev_states[state_key] = is_reset
+
 def _generate_alerts():
-    # Solar
+    # ── Solar ──
     _check_range_dedup("solar", "Solar Voltage", _solar["voltage"],
                        "voltage_high", "voltage_low")
     _check_range_dedup("solar", "Solar RMS", _solar["rms"],
                        "rms_high", "rms_low")
-    _check_state_change("charging", _solar["charging"],
-                        "Battery charging", "Battery not charging", "solar")
+    _check_range_dedup("solar", "Irradiance", _solar["irradiance"],
+                       "irradiance_high", "irradiance_low")
+    prev_soc = _prev_states.get("prev_soc")
+    cur_soc = _solar["soc"]
+    if prev_soc is not None:
+        charging_now = 1 if cur_soc > prev_soc else 0
+        _solar["charging"] = charging_now
+        _check_state_change("charging", charging_now,
+                            "Battery charging", "Battery not charging", "solar")
+    _prev_states["prev_soc"] = cur_soc
 
-    # SOC low
     soc_lo = _thresholds["solar"].get("soc_low")
     if soc_lo is not None:
         cond_key = "solar:SOC_low"
@@ -254,20 +325,12 @@ def _generate_alerts():
             _add_alert("solar", f"Battery SOC normal — {_solar['soc']}% (was below {soc_lo}%)", "info")
             _active_conditions[cond_key] = False
 
-    # Ambient temp
-    _check_range_dedup("solar", "Ambient Temp", _solar["temp_ambient"],
-                       "temp_ambient_high", "temp_ambient_low")
-    # Panel temp
     _check_range_dedup("solar", "Panel Temp", _solar["temp_panel"],
                        "temp_panel_high", "temp_panel_low")
-    # Module temp
-    _check_range_dedup("solar", "Module Temp", _solar["temp_module"],
-                       "temp_module_high", "temp_module_low")
 
-    # Hydro — pressure low only (hardcoded 296 kPa)
+    # ── Hydro ──
     _check_range_dedup("hydro", "Water Pressure", _hydro["pressure"],
                        None, "pressure_low")
-    # Hydro — flow rate low only (hardcoded 1.31 m³/s)
     _check_range_dedup("hydro", "Water Flow Rate", _hydro["flow_rate"],
                        None, "flow_rate_low")
     _check_range_dedup("hydro", "Hydro Voltage", _hydro["voltage"],
@@ -275,28 +338,15 @@ def _generate_alerts():
     _check_state_change("pump_state", _hydro["pump_state"],
                         "Pump started — running", "Pump stopped", "hydro")
 
-    # Generator — binary fault flags from Simulink
-    _gen_fault_map = {
-        "fault_voltage":      ("Generator Voltage",  _gen["voltage"],      "V"),
-        "fault_current":      ("Generator Current",   _gen["current"],      "A"),
-        "fault_rpm_low":      ("Engine RPM Low",      _gen["rpm"],          "RPM"),
-        "fault_rpm_high":     ("Engine RPM High",     _gen["rpm"],          "RPM"),
-        "fault_fuel":         ("Fuel Level",          _gen["fuel_pct"],     "%"),
-        "fault_gen_temp":     ("Generator Temp",      _gen["gen_temp"],     "°C"),
-        "fault_oil_pressure": ("Oil Pressure",        _gen["oil_pressure"], "PSI"),
-        "fault_vibration":    ("Vibration",           _gen["vibration"],    "mm/s"),
-    }
-    for fault_key, (label, value, unit) in _gen_fault_map.items():
-        cond_key = f"generator:{fault_key}"
-        is_fault = bool(_gen.get(fault_key, 0))
-        was_fault = _active_conditions.get(cond_key, False)
-        if is_fault and not was_fault:
-            _add_alert("generator", f"{label} abnormal — {value:.1f} {unit}", "warn")
-            _active_conditions[cond_key] = True
-        elif not is_fault and was_fault:
-            _add_alert("generator", f"{label} returned to normal — {value:.1f} {unit}", "info")
-            _active_conditions[cond_key] = False
+    # ── Pump Generator ──
+    _check_fault_reset(_pgen, "pgen", "pgen_fault_reset")
+    _generate_gen_fault_alerts(_pgen, "pgen")
+    _check_state_change("pgen_running", _pgen["running"],
+                        "Pump generator started", "Pump generator stopped", "pgen")
 
+    # ── Main Generator ──
+    _check_fault_reset(_gen, "generator", "gen_fault_reset")
+    _generate_gen_fault_alerts(_gen, "generator")
     _check_state_change("gen_running", _gen["running"],
                         "Generator started", "Generator stopped", "generator")
 
@@ -316,10 +366,13 @@ def _update_chart_history():
     push("hydro_power", _hydro["power_out"])
     push("hydro_load", _hydro["load"])
     push("hydro_flow", _hydro["flow_rate"])
+    push("pgen_power", _pgen["power_out"])
+    push("pgen_load", _pgen["load"])
     push("gen_power", _gen["power_out"])
     push("gen_load", _gen["load"])
     push("overview_solar", _solar["power_out"])
     push("overview_hydro", _hydro["power_out"])
+    push("overview_pgen", _pgen["power_out"])
     push("overview_gen", _gen["power_out"])
 
 # ══════════════════════════════════════════════════════════
@@ -391,7 +444,6 @@ def api_update():
     global _chart_update_counter
     data = request.json or {}
     with _lock:
-        # Map prefixed keys to the correct subsystem dict
         for prefixed_key, field in _SOLAR_PREFIX.items():
             if prefixed_key in data:
                 _solar[field] = data[prefixed_key]
@@ -400,16 +452,15 @@ def api_update():
             if prefixed_key in data:
                 _hydro[field] = data[prefixed_key]
 
+        for prefixed_key, field in _PGEN_PREFIX.items():
+            if prefixed_key in data:
+                _pgen[field] = data[prefixed_key]
+
         for prefixed_key, field in _GEN_PREFIX.items():
             if prefixed_key in data:
                 _gen[field] = data[prefixed_key]
 
-        # Also accept "running" without prefix (backward compat)
-        if "running" in data and "gen_running" not in data:
-            _gen["running"] = data["running"]
-
         _chart_update_counter += 1
-        # Check alerts every 6th update (~3s at 0.5s poll) — reduces disk writes
         if _chart_update_counter % 6 == 0:
             _generate_alerts()
         if _chart_update_counter % 3 == 0:
@@ -425,8 +476,8 @@ def api_data():
     with _lock:
         today = _load_alerts_for_date()
         return jsonify(solar=dict(_solar), hydro=dict(_hydro),
-                       gen=dict(_gen), alerts=today,
-                       ambient_temp=_solar["temp_ambient"])
+                       pgen=dict(_pgen), gen=dict(_gen),
+                       alerts=today)
 
 @app.route('/api/solar')
 @login_required
@@ -442,8 +493,15 @@ def api_hydro():
     with _lock:
         today = _load_alerts_for_date()
         ha = [a for a in today if a.get("source") == "hydro"]
-        return jsonify(**_hydro, gen_running=_gen["running"],
-                       ambient_temp=_solar["temp_ambient"], alerts=ha)
+        return jsonify(**_hydro, pgen_running=_pgen["running"], alerts=ha)
+
+@app.route('/api/pgen')
+@login_required
+def api_pgen():
+    with _lock:
+        today = _load_alerts_for_date()
+        pa = [a for a in today if a.get("source") == "pgen"]
+        return jsonify(**_pgen, alerts=pa)
 
 @app.route('/api/generator')
 @login_required
@@ -451,7 +509,7 @@ def api_generator():
     with _lock:
         today = _load_alerts_for_date()
         ga = [a for a in today if a.get("source") == "generator"]
-        return jsonify(**_gen, ambient_temp=_solar["temp_ambient"], alerts=ga)
+        return jsonify(**_gen, alerts=ga)
 
 # ══════════════════════════════════════════════════════════
 #  API — ALERTS BY DATE
@@ -480,13 +538,41 @@ def api_chart_history():
         return jsonify(**_chart_history)
 
 # ══════════════════════════════════════════════════════════
-#  API — GENERATOR TOGGLE
+#  API — GENERATOR START / SHUTDOWN (pump gen + main gen)
 # ══════════════════════════════════════════════════════════
-@app.route('/api/gen_toggle', methods=['POST'])
+@app.route('/api/pgen_start', methods=['POST'])
 @login_required
-def gen_toggle():
+def pgen_start():
     with _lock:
-        _gen_pending['cmd'] = 'TOGGLE'
+        _pgen_pending['cmd'] = 'START'
+    return jsonify(ok=True)
+
+@app.route('/api/pgen_shutdown', methods=['POST'])
+@login_required
+def pgen_shutdown():
+    with _lock:
+        _pgen_pending['cmd'] = 'SHUTDOWN'
+    return jsonify(ok=True)
+
+@app.route('/api/pgen_command')
+def pgen_command():
+    with _lock:
+        cmd = _pgen_pending['cmd']
+        _pgen_pending['cmd'] = ''
+    return jsonify(cmd=cmd)
+
+@app.route('/api/gen_start', methods=['POST'])
+@login_required
+def gen_start():
+    with _lock:
+        _gen_pending['cmd'] = 'START'
+    return jsonify(ok=True)
+
+@app.route('/api/gen_shutdown', methods=['POST'])
+@login_required
+def gen_shutdown():
+    with _lock:
+        _gen_pending['cmd'] = 'SHUTDOWN'
     return jsonify(ok=True)
 
 @app.route('/api/gen_command')

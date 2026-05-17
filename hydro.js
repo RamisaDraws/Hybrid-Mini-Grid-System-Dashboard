@@ -60,22 +60,17 @@ function playAlertBeep() {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.value = 880;
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine'; osc.frequency.value = 880;
     gain.gain.setValueAtTime(0.18, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3);
   } catch (e) {}
 }
 
 function checkAlertSound(alerts) {
   const count = (alerts || []).length;
-  if (_prevAlertCount >= 0 && count > _prevAlertCount) {
-    playAlertBeep();
-  }
+  if (_prevAlertCount >= 0 && count > _prevAlertCount) playAlertBeep();
   _prevAlertCount = count;
 }
 
@@ -86,12 +81,6 @@ hamburgerBtn.addEventListener('click', () => mobileNav.classList.toggle('open'))
 mobileNav.querySelectorAll('.nav-link').forEach(l =>
   l.addEventListener('click', () => mobileNav.classList.remove('open'))
 );
-
-/* ── Weather (from Simulink ambient temp, updated via poll) ── */
-function updateWeatherFromData(ambientTemp) {
-  const el = document.getElementById('weather-temp');
-  if (el) el.textContent = Number(ambientTemp).toFixed(1) + '°C';
-}
 
 /* ── Chart options ── */
 function getChartOpts() {
@@ -128,36 +117,38 @@ const chartLabels = Array.from({ length: 16 }, () => '--:--');
 function drawGauge(el, value, min, max, color) {
   const c = el.getContext('2d');
   const W = el.width, H = el.height;
-  const cx = W/2, cy = H-25, r = Math.min(W/2, H)-14, lw = 12;
+  const cx = W / 2, cy = H - 25;
+  const r = Math.min(W / 2, H) - 14, lw = 12;
   const s = getComputedStyle(document.body);
   const trackColor = s.getPropertyValue('--gauge-track').trim();
-  const tickColor = s.getPropertyValue('--gauge-tick').trim();
+  const tickColor  = s.getPropertyValue('--gauge-tick').trim();
   const labelColor = s.getPropertyValue('--gauge-label').trim();
   c.clearRect(0, 0, W, H);
   c.beginPath(); c.arc(cx, cy, r, Math.PI, 0, false);
   c.strokeStyle = trackColor; c.lineWidth = lw; c.lineCap = 'round'; c.stroke();
-  const frac = Math.max(0, Math.min(1, (value-min)/(max-min)));
-  c.beginPath(); c.arc(cx, cy, r, Math.PI, Math.PI + frac*Math.PI, false);
+  const range = max - min;
+  const frac = range > 0 ? Math.max(0, Math.min(1, (value - min) / range)) : 0;
+  c.beginPath(); c.arc(cx, cy, r, Math.PI, Math.PI + frac * Math.PI, false);
   c.strokeStyle = color; c.lineWidth = lw; c.lineCap = 'round';
   if (!isLight()) { c.shadowColor = color; c.shadowBlur = 10; }
   c.stroke(); c.shadowBlur = 0;
   c.strokeStyle = tickColor; c.lineWidth = 1;
   for (let i = 0; i <= 10; i++) {
-    const a = Math.PI + (i/10)*Math.PI;
+    const a = Math.PI + (i / 10) * Math.PI;
     c.beginPath();
-    c.moveTo(cx+(r-lw/2-2)*Math.cos(a), cy+(r-lw/2-2)*Math.sin(a));
-    c.lineTo(cx+(r+lw/2+2)*Math.cos(a), cy+(r+lw/2+2)*Math.sin(a));
+    c.moveTo(cx + (r - lw/2 - 2) * Math.cos(a), cy + (r - lw/2 - 2) * Math.sin(a));
+    c.lineTo(cx + (r + lw/2 + 2) * Math.cos(a), cy + (r + lw/2 + 2) * Math.sin(a));
     c.stroke();
   }
   c.fillStyle = labelColor; c.font = '13px JetBrains Mono';
-  c.textAlign = 'left'; c.fillText(min, cx-r-2, cy+25);
-  c.textAlign = 'right'; c.fillText(max, cx+r+8, cy+25);
+  c.textAlign = 'left'; c.fillText(min, cx - r - 2, cy + 25);
+  c.textAlign = 'right'; c.fillText(max, cx + r + 10, cy + 25);
 }
 
-/* ── Rolling data ── */
-const flowData  = new Array(16).fill(0);
+/* ── Chart data (rolling) ── */
 const powerData = new Array(16).fill(0);
 const loadData  = new Array(16).fill(0);
+const flowData  = new Array(16).fill(0);
 let flowChart, dualChart;
 
 /* ── Alerts ── */
@@ -317,10 +308,10 @@ setInterval(async () => {
     document.getElementById('voltage-val').textContent = Number(d.voltage).toFixed(1);
     document.getElementById('current-val').textContent = Number(d.current).toFixed(1);
 
-    // Generator status on hydro page
+    // Pump generator status on hydro page
     const genDot = document.getElementById('hydro-gen-dot');
     const genTxt = document.getElementById('hydro-gen-text');
-    if (d.gen_running) {
+    if (d.pgen_running) {
       if (genDot) genDot.className = 'gen-status-dot-hydro running';
       if (genTxt) genTxt.textContent = 'RUNNING';
     } else {
@@ -332,9 +323,6 @@ setInterval(async () => {
     const stateEl = document.getElementById('pump-state-val');
     const iconEl = document.querySelector('.pump-icon-wrap');
     const subEl = document.querySelector('.pump-state-sub');
-
-    // Weather from Simulink ambient temp
-    if (d.ambient_temp !== undefined) updateWeatherFromData(d.ambient_temp);
     if (d.pump_state) {
       if (stateEl) { stateEl.textContent = 'RUNNING'; stateEl.classList.remove('pump-state-off'); }
       if (iconEl) iconEl.className = 'pump-icon-wrap pump-on';
@@ -344,6 +332,13 @@ setInterval(async () => {
       if (iconEl) iconEl.className = 'pump-icon-wrap pump-off';
       if (subEl) subEl.textContent = 'Turbine offline';
     }
+
+    // Powerbank
+    const pbVal = Number(d.powerbank || 0);
+    const pbEl = document.getElementById('powerbank-val');
+    const pbBar = document.getElementById('powerbank-bar');
+    if (pbEl) pbEl.innerHTML = pbVal.toFixed(0) + ' <span class="powerbank-unit">kW</span>';
+    if (pbBar) pbBar.style.width = Math.max(0, Math.min(100, (pbVal / 25000) * 100)) + '%';
 
     // Rolling charts
     pollCount++;
@@ -363,7 +358,7 @@ setInterval(async () => {
       renderAlerts(d.alerts || []);
     }
   } catch (e) { console.warn('Bridge not connected:', e.message); }
-}, 2000);
+}, 1000);
 
 /* ── Thresholds ── */
 async function loadThresholds() {
@@ -390,6 +385,6 @@ async function saveThresholds() {
     });
     if (handleAuthError(res)) return;
     const btn = document.getElementById('thresh-save-btn');
-    if (btn) { btn.textContent = 'Saved ✓'; setTimeout(() => btn.textContent = 'Save Thresholds', 1500); }
+    if (btn) { btn.textContent = 'Saved ✓'; setTimeout(() => btn.textContent = 'Save Thresholds', 1000); }
   } catch (e) {}
 }

@@ -22,6 +22,8 @@
   --hydro-dim:   rgba(62,207,207,0.12);
   --gen:         #ff6b6b;
   --gen-dim:     rgba(255,107,107,0.12);
+  --pgen:        #ff9a3c;
+  --pgen-dim:    rgba(255,154,60,0.12);
 
   --accent:      #00e5a0;
   --accent-dim:  rgba(0,229,160,0.1);
@@ -61,6 +63,8 @@ body.light {
   --hydro-dim:   rgba(8,145,178,0.12);
   --gen:         #dc2626;
   --gen-dim:     rgba(220,38,38,0.10);
+  --pgen:        #d97706;
+  --pgen-dim:    rgba(217,119,6,0.12);
 
   --accent:      #059669;
   --accent-dim:  rgba(5,150,105,0.1);
@@ -84,6 +88,8 @@ body.light .hydro-btn { background: var(--hydro); color: #fff; border-color: var
 body.light .hydro-btn:hover { opacity: 0.85; }
 body.light .gen-btn   { background: var(--gen);   color: #fff; border-color: var(--gen); }
 body.light .gen-btn:hover { opacity: 0.85; }
+body.light .pgen-btn  { background: var(--pgen);  color: #fff; border-color: var(--pgen); }
+body.light .pgen-btn:hover { opacity: 0.85; }
 
 body.light .status-online {
   background: var(--accent);
@@ -138,7 +144,7 @@ body {
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   padding: 0 1.5rem;
-  height: 100px;
+  height: 110px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   position: sticky;
@@ -202,7 +208,8 @@ body {
 
 .nav-link.solar-link:hover  { color: var(--solar); background: var(--solar-dim); }
 .nav-link.hydro-link:hover  { color: var(--hydro); background: var(--hydro-dim); }
-.nav-link.gen-link:hover    { color: var(--gen);   background: var(--gen-dim);   }
+.nav-link.pgen-link:hover   { color: var(--pgen);  background: var(--pgen-dim);  }
+.nav-link.gen-link:hover    { color: var(--gen);    background: var(--gen-dim);   }
 
 .topbar-right {
   display: flex;
@@ -231,21 +238,6 @@ body {
   color: var(--text-muted);
   letter-spacing: 0.04em;
 }
-
-.live-weather {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  padding: 0.3rem 0.7rem;
-  border-radius: 6px;
-}
-.live-weather svg { color: var(--solar); flex-shrink: 0; }
-.live-weather span:first-of-type { color: var(--text); font-weight: 500; }
-.weather-loc { color: var(--text-dim); font-size: 0.78rem; }
 
 /* ── Hamburger (mobile only) ── */
 .hamburger {
@@ -289,9 +281,6 @@ body {
 
 /* ══════════════════════════════════════
    MAIN LAYOUT — large screen
-   Map: 460px (explicit, twice the old auto width)
-   Sources: 1fr
-   Alerts: 200px
 ══════════════════════════════════════ */
 .dashboard-main {
   display: grid;
@@ -321,11 +310,11 @@ body {
 .panel-map     { grid-area: map; }
 .panel-sources { grid-area: sources; }
 
-/* ── Alerts row: 3 columns ── */
+/* ── Alerts row: 4 columns ── */
 .alerts-row {
   grid-area: alerts;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 1rem;
 }
 
@@ -356,6 +345,7 @@ body {
 }
 .dot-green  { background: var(--accent); }
 .dot-yellow { background: var(--solar); }
+.dot-orange { background: var(--pgen); }
 .dot-red    { background: var(--gen); }
 
 @keyframes blink {
@@ -366,16 +356,12 @@ body {
 
 /* ══════════════════════════════════════
    LEFT — MAP PANEL
-   No max-height, no overflow clip.
-   Height is driven entirely by JS
-   (postMessage from village_map.html).
 ══════════════════════════════════════ */
 .map-embed-wrap {
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--surface2);
   border: 1px solid var(--border);
-  /* NO height, NO max-height — JS sets both */
 }
 
 .map-iframe {
@@ -383,7 +369,6 @@ body {
   width: 100%;
   border: none;
   overflow: hidden;
-  /* height set by JS */
 }
 
 /* ══════════════════════════════════════
@@ -397,7 +382,6 @@ body {
 
 .source-row {
   display: grid;
-  /* 220px stat card — wide enough for labels + values without overflow */
   grid-template-columns: 350px 1fr;
   gap: 0.75rem;
 }
@@ -412,12 +396,11 @@ body {
   gap: 0.75rem;
   transition: border-color 0.25s;
   min-width: 0;
- 
-  
 }
 
 .solar-row .source-card { border-left: 2px solid var(--solar); }
 .hydro-row .source-card { border-left: 2px solid var(--hydro); }
+.pgen-row  .source-card { border-left: 2px solid var(--pgen);  }
 .gen-row   .source-card { border-left: 2px solid var(--gen);   }
 
 .source-header {
@@ -425,7 +408,6 @@ body {
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
-  
 }
 
 .source-icon {
@@ -439,6 +421,7 @@ body {
 }
 .solar-icon { background: var(--solar-dim); color: var(--solar); }
 .hydro-icon { background: var(--hydro-dim); color: var(--hydro); }
+.pgen-icon  { background: var(--pgen-dim);  color: var(--pgen);  }
 .gen-icon   { background: var(--gen-dim);   color: var(--gen);   }
 
 .source-name {
@@ -500,6 +483,7 @@ body {
 }
 .solar-val { color: var(--solar); }
 .hydro-val { color: var(--hydro); }
+.pgen-val  { color: var(--pgen);  }
 .gen-val   { color: var(--gen);   }
 
 .stat-unit {
@@ -525,6 +509,8 @@ body {
 .solar-btn:hover { background: rgba(245,200,66,0.2); }
 .hydro-btn { background: var(--hydro-dim); color: var(--hydro); border: 1px solid rgba(62,207,207,0.2); }
 .hydro-btn:hover { background: rgba(62,207,207,0.2); }
+.pgen-btn  { background: var(--pgen-dim);  color: var(--pgen);  border: 1px solid rgba(255,154,60,0.2); }
+.pgen-btn:hover { background: rgba(255,154,60,0.2); }
 .gen-btn   { background: var(--gen-dim);   color: var(--gen);   border: 1px solid rgba(255,107,107,0.2); }
 .gen-btn:hover { background: rgba(255,107,107,0.2); }
 
@@ -693,11 +679,10 @@ body {
 .source-row:nth-child(1) { animation: fadeUp 0.35s ease 0.15s both; }
 .source-row:nth-child(2) { animation: fadeUp 0.35s ease 0.25s both; }
 .source-row:nth-child(3) { animation: fadeUp 0.35s ease 0.35s both; }
+.source-row:nth-child(4) { animation: fadeUp 0.35s ease 0.45s both; }
 
 /* ══════════════════════════════════════
    RESPONSIVE — MEDIUM (≤1100px)
-   Map full width on top, no height cap.
-   Source rows keep stat|graph side by side.
 ══════════════════════════════════════ */
 @media (max-width: 1100px) {
   .dashboard-main {
@@ -712,19 +697,17 @@ body {
     width: 100%;
   }
 
-  /* Full width iframe — height still set by JS, no cap */
   .map-iframe {
     width: 100% !important;
   }
 
-  /* Stat card slightly narrower on medium to fit viewport */
   .source-row {
     grid-template-columns: 350px 1fr;
   }
 
-  /* Alerts row: still 3 columns on medium */
+  /* Alerts row: 2×2 grid on medium */
   .alerts-row {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 
   .alerts-row .panel-alerts {
@@ -782,7 +765,6 @@ body {
     width: 100% !important;
   }
 
-  /* Stack stat card above graph on small */
   .source-row {
     grid-template-columns: 1fr;
   }

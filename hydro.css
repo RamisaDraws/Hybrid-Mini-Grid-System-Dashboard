@@ -732,3 +732,99 @@ body.light .gen-status-card {
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   transition: background 0.3s ease, border-color 0.3s ease;
 }
+/* ══════════════════════════════════════
+   POWERBANK CARD
+══════════════════════════════════════ */
+.powerbank-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--hydro);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  animation: fadeUp 0.4s ease 0.3s both;
+}
+
+.powerbank-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.powerbank-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.powerbank-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--hydro);
+  line-height: 1;
+}
+
+.powerbank-unit {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  font-weight: 400;
+}
+
+.powerbank-bar-track {
+  width: 100%;
+  height: 14px;
+  background: var(--surface3);
+  border-radius: 7px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.powerbank-bar-fill {
+  height: 100%;
+  border-radius: 7px;
+  background: linear-gradient(90deg, #3ecfcf, #2ab8b8);
+  transition: width 0.6s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.powerbank-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+.powerbank-ticks {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1px;
+}
+
+.powerbank-tick {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--text-dim);
+}
+
+/* Light mode */
+body.light .powerbank-card {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+@media (max-width: 700px) {
+  .powerbank-value { font-size: 1.1rem; }
+  .powerbank-tick { font-size: 0.55rem; }
+  .powerbank-bar-track { height: 10px; }
+}

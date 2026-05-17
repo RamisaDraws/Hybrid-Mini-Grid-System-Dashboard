@@ -10,7 +10,6 @@
 </head>
 <body>
 
-<!-- ── TOP BAR ── -->
 <header class="topbar">
   <div class="topbar-left">
     <div class="site-title">
@@ -22,15 +21,14 @@
       </a>
     </div>
   </div>
-
   <nav class="topbar-nav">
     <a href="index.html" class="nav-link">Overview</a>
     <a href="solar.html" class="nav-link solar-link active">Solar</a>
     <a href="hydro.html" class="nav-link hydro-link">Hydro</a>
+    <a href="pump_gen.html" class="nav-link pgen-link">Pump Gen</a>
     <a href="generator.html" class="nav-link gen-link">Generator</a>
     <a href="#" class="nav-link" onclick="doLogout(); return false;">Logout</a>
   </nav>
-
   <div class="topbar-right">
     <div class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">
       <span class="theme-toggle-icon">☀️</span>
@@ -41,23 +39,15 @@
       <div class="live-time" id="live-time">--:--:--</div>
       <div class="live-date" id="live-date">-- --- ----</div>
     </div>
-    <div class="live-weather">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-      <span id="weather-temp">--°C</span>
-      <span class="weather-loc">Karazhar, KZ</span>
-    </div>
   </div>
-
-  <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
-    <span></span><span></span><span></span>
-  </button>
+  <button class="hamburger" id="hamburger-btn" aria-label="Open menu"><span></span><span></span><span></span></button>
 </header>
 
-<!-- ── MOBILE NAV DRAWER ── -->
 <nav class="mobile-nav" id="mobile-nav">
   <a href="index.html" class="nav-link">Overview</a>
   <a href="solar.html" class="nav-link solar-link active">Solar</a>
   <a href="hydro.html" class="nav-link hydro-link">Hydro</a>
+  <a href="pump_gen.html" class="nav-link pgen-link">Pump Gen</a>
   <a href="generator.html" class="nav-link gen-link">Generator</a>
   <a href="#" class="nav-link" onclick="doLogout(); return false;">Logout</a>
   <div class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">
@@ -67,40 +57,29 @@
   </div>
 </nav>
 
-<!-- ── MAIN ── -->
 <main class="solar-main">
 
-  <!-- ════ LEFT COLUMN ════ -->
+  <!-- ════ LEFT ════ -->
   <div class="solar-left">
-
-    <!-- Solar photo -->
     <div class="solar-image-card">
       <div class="solar-image-inner">
         <img src="images/solar.png" alt="Rooftop Solar PV Array — Karazhar"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
         <div class="solar-image-placeholder">
           <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
             <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
             <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
             <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
           </svg>
-          <span>IMAGE PLACEHOLDER — 14.jpg</span>
+          <span>IMAGE PLACEHOLDER</span>
         </div>
       </div>
       <div class="solar-image-footer">
         <span class="solar-image-label">Solar Farm — Karazhar</span>
-        <!--
-        <span class="solar-capacity-badge">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          ~99 kW rated
-        </span>
-        -->
       </div>
     </div>
 
-    <!-- Dual-line chart -->
     <div class="chart-card">
       <div class="chart-card-header">
         <span class="chart-card-title">Power Output vs Load Demand</span>
@@ -111,10 +90,9 @@
       </div>
       <div class="chart-wrap-lg"><canvas id="chart-solar-dual"></canvas></div>
     </div>
+  </div>
 
-  </div><!-- /solar-left -->
-
-  <!-- ════ CENTER 2×2 ════ -->
+  <!-- ════ CENTER ════ -->
   <div class="solar-center">
 
     <!-- Voltage gauge -->
@@ -128,44 +106,41 @@
       <span class="gauge-subtext">Nominal 220 V</span>
     </div>
 
-    <!-- Current gauge -->
+    <!-- Irradiance gauge -->
     <div class="gauge-card">
-      <span class="gauge-card-label">Current</span>
-      <canvas id="gauge-current" class="gauge-canvas" width="200" height="125"></canvas>
+      <span class="gauge-card-label">Irradiance</span>
+      <canvas id="gauge-irradiance" class="gauge-canvas" width="200" height="125"></canvas>
       <div class="gauge-value-block">
-        <span class="gauge-value" id="current-val">--</span>
-        <span class="gauge-unit">A</span>
+        <span class="gauge-value" id="irradiance-val">--</span>
+        <span class="gauge-unit">W/m²</span>
       </div>
-      <span class="gauge-subtext">Max rated 100 A</span>
+      <span class="gauge-subtext">Range 0–2000 W/m²</span>
     </div>
 
-    <!-- Battery SOC + RMS side by side on desktop -->
-    <div class="soc-rms-row">
-      <!-- Battery SOC -->
-      <div class="soc-card">
-        <div class="soc-card-header">
-          <span class="soc-card-label">Battery SOC</span>
-          <span class="soc-pct" id="soc-val">--%</span>
-        </div>
-        <div class="soc-bar-track">
-          <div class="soc-bar-fill" id="soc-bar" style="width:0%"></div>
-        </div>
-        <div class="soc-ticks">
-          <span class="soc-tick">0%</span>
-          <span class="soc-tick">25%</span>
-          <span class="soc-tick">50%</span>
-          <span class="soc-tick">75%</span>
-          <span class="soc-tick">100%</span>
-        </div>
-        <div class="charging-status" id="charging-status">
-          <div class="charging-icon charging-off">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          </div>
-          <span>Waiting…</span>
-        </div>
+    <!-- Battery SOC — full width -->
+    <div class="soc-card" style="grid-column: 1 / -1;">
+      <div class="soc-card-header">
+        <span class="soc-card-label">Battery SOC</span>
+        <span class="soc-pct" id="soc-val">--%</span>
       </div>
+      <div class="soc-bar-track">
+        <div class="soc-bar-fill" id="soc-bar" style="width:0%"></div>
+      </div>
+      <div class="soc-ticks">
+        <span class="soc-tick">0%</span><span class="soc-tick">25%</span>
+        <span class="soc-tick">50%</span><span class="soc-tick">75%</span>
+        <span class="soc-tick">100%</span>
+      </div>
+      <div class="charging-status" id="charging-status">
+        <div class="charging-icon charging-off">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <span>Waiting…</span>
+      </div>
+    </div>
 
-      <!-- RMS Voltage gauge -->
+    <!-- RMS Voltage + Cell Temperature side by side -->
+    <div class="rms-temp-row">
       <div class="gauge-card rms-gauge-card">
         <span class="gauge-card-label">RMS Voltage</span>
         <canvas id="gauge-rms" class="gauge-canvas" width="200" height="125"></canvas>
@@ -175,35 +150,17 @@
         </div>
         <span class="gauge-subtext">Nominal 240 V</span>
       </div>
-    </div>
 
-    <!-- Solar temperature — full width, 3 vertical readings -->
-    <div class="temp-card">
-      <span class="temp-card-label">Solar Temperature</span>
-      <div class="temp-readings">
-        <!-- Ambient (from weather API) -->
-        <div class="temp-reading">
-          <span class="temp-reading-label">Ambient</span>
-          <div class="temp-vbar-track">
-            <div class="temp-vbar-fill temp-ambient-bar" id="ambient-temp-bar" style="height:0%"></div>
+      <div class="temp-card">
+        <span class="temp-card-label">Cell Temperature</span>
+        <div class="temp-readings">
+          <div class="temp-reading">
+            <span class="temp-reading-label">Panel</span>
+            <div class="temp-vbar-track">
+              <div class="temp-vbar-fill temp-panel-bar" id="panel-temp-bar" style="height:0%"></div>
+            </div>
+            <span class="temp-reading-value temp-panel-val" id="panel-temp-val">--°C</span>
           </div>
-          <span class="temp-reading-value temp-ambient-val" id="ambient-temp-val">--°C</span>
-        </div>
-        <!-- Panel (from Simulink) -->
-        <div class="temp-reading">
-          <span class="temp-reading-label">Panel</span>
-          <div class="temp-vbar-track">
-            <div class="temp-vbar-fill temp-panel-bar" id="panel-temp-bar" style="height:0%"></div>
-          </div>
-          <span class="temp-reading-value temp-panel-val" id="panel-temp-val">--°C</span>
-        </div>
-        <!-- Module (from Simulink) -->
-        <div class="temp-reading">
-          <span class="temp-reading-label">Battery</span>
-          <div class="temp-vbar-track">
-            <div class="temp-vbar-fill temp-module-bar" id="module-temp-bar" style="height:0%"></div>
-          </div>
-          <span class="temp-reading-value temp-module-val" id="module-temp-val">--°C</span>
         </div>
       </div>
     </div>
@@ -233,10 +190,10 @@
           </div>
         </div>
         <div class="thresh-group">
-          <span class="thresh-group-title">Ambient Temp</span>
+          <span class="thresh-group-title">Irradiance</span>
           <div class="thresh-pair">
-            <label>High<input type="number" class="threshold-input" id="thresh-temp_ambient_high" value="45"></label>
-            <label>Low<input type="number" class="threshold-input" id="thresh-temp_ambient_low" value="-30"></label>
+            <label>High<input type="number" class="threshold-input" id="thresh-irradiance_high" value="1870"></label>
+            <label>Low<input type="number" class="threshold-input" id="thresh-irradiance_low" value="900"></label>
           </div>
         </div>
         <div class="thresh-group">
@@ -246,18 +203,11 @@
             <label>Low<input type="number" class="threshold-input" id="thresh-temp_panel_low" value="-20"></label>
           </div>
         </div>
-        <div class="thresh-group">
-          <span class="thresh-group-title">Module Temp</span>
-          <div class="thresh-pair">
-            <label>High<input type="number" class="threshold-input" id="thresh-temp_module_high" value="80"></label>
-            <label>Low<input type="number" class="threshold-input" id="thresh-temp_module_low" value="-20"></label>
-          </div>
-        </div>
       </div>
       <button class="thresh-save-btn" id="thresh-save-btn" onclick="saveThresholds()">Save Thresholds</button>
     </div>
 
-  </div><!-- /solar-center -->
+  </div>
 
   <!-- ════ RIGHT: ALERTS ════ -->
   <aside class="panel-alerts solar-alerts">
@@ -269,19 +219,14 @@
       <select id="alert-date-select" onchange="onAlertDateChange()"></select>
     </div>
     <div class="alerts-list">
-      <div class="alert-item alert-info">
-        <div class="alert-dot dot-green"></div>
-        <div class="alert-body">
-          <span class="alert-msg">Waiting for data…</span>
-          <span class="alert-time">--:--:--</span>
-        </div>
-      </div>
+      <div class="alert-item alert-info"><div class="alert-dot dot-green"></div>
+        <div class="alert-body"><span class="alert-msg">Waiting for data…</span>
+        <span class="alert-time">--:--:--</span></div></div>
     </div>
   </aside>
 
 </main>
 
-<!-- ── FOOTER ── -->
 <footer class="site-footer">
   <span>ENG30002 · Mini-Grid Project · Karazhar, Akmola Region, Kazakhstan</span>
   <span>Swinburne University of Technology Sarawak</span>

@@ -18,14 +18,14 @@ SERVER = "http://127.0.0.1:5000"
 POLL   = 1.0  # seconds
 
 tick = 0
-gen_running = 0
+pgen_running = 0
+gen_running  = 0
 
 print(f"Demo push running → {SERVER}  (Ctrl+C to stop)")
 
 while True:
     t = tick * 0.1
-    # Gentle sine oscillation
-    wave = math.sin(t)
+    wave  = math.sin(t)
     wave2 = math.sin(t * 0.7)
 
     # ── Solar signals ──
@@ -36,7 +36,25 @@ while True:
     hydro_power = 248 + 4 * wave
     hydro_load  = 195 + 15 * wave2
 
-    # ── Generator signals (only meaningful when running) ──
+    # ── Pump generator signals ──
+    if pgen_running:
+        pgv = round(220 + 2 * wave, 1)
+        pgc = round(120 + 3 * wave2, 1)
+        pgp = round(30 + 3 * wave, 1)
+        pgrpm = round(1500 + 20 * wave)
+        pgfreq = round(50.0 + 0.5 * wave, 1)
+        pgtemp = round(110 + 5 * wave, 1)
+        pgoil = round(45 + 5 * wave2, 1)
+        pgvib = round(10 + 3 * wave, 1)
+        pgbat_cur = 15
+    else:
+        pgv, pgc, pgp = 0, 0, 0
+        pgrpm, pgfreq = 0, 0
+        pgtemp = 0
+        pgoil, pgvib = 0, 0
+        pgbat_cur = 0
+
+    # ── Main generator signals ──
     if gen_running:
         gv = round(220 + 2 * wave, 1)
         gc = round(182 + 3 * wave2, 1)
@@ -57,14 +75,12 @@ while True:
     payload = {
         # ── Solar (prefixed) ──
         "solar_voltage":     round(218 + 4 * wave, 1),
-        "solar_current":     round(89 + 3 * wave2, 1),
+        "solar_irradiance":  round(950 + 200 * wave, 1),
         "solar_power":       round(solar_power, 1),
         "solar_load":        round(solar_load, 1),
         "solar_soc":         round(max(0, min(100, 65 + 10 * wave))),
         "solar_charging":    1 if wave > -0.3 else 0,
-        "solar_temp_ambient":round(15 + 8 * wave, 1),
         "solar_temp_panel":  round(40 + 5 * wave, 1),
-        "solar_temp_module": round(46 + 4 * wave2, 1),
         "solar_rms":         round(240 + 8 * wave, 1),
 
         # ── Hydro (prefixed) ──
@@ -75,34 +91,61 @@ while True:
         "hydro_flow_rate":   round(2.8 + 0.15 * wave, 3),
         "hydro_pressure":    round(350 + 30 * wave2, 1),
         "hydro_pump_state":  1,
+        "hydro_powerbank":  random.uniform(5000, 15000),
 
-        # ── Generator (prefixed) ──
-        "running":           gen_running,
-        "gen_voltage":       gv,
-        "gen_current":       gc,
-        "gen_power":         gp,
-        "gen_load":          round(hydro_load, 1),
-        "gen_rpm":           grpm,
-        "gen_frequency":     gfreq,
-        "gen_temp":          gtemp,
-        "gen_fuel":          max(0, round(72 - tick * 0.01, 1)),
-        "gen_bat_voltage":   24,
-        "gen_bat_current":   gbat_cur,
-        "gen_oil_pressure":  goil,
-        "gen_vibration":     gvib,
+        # ── Pump generator (prefixed) ──
+        "pgen_running":          pgen_running,
+        "pgen_voltage":          pgv,
+        "pgen_current":          pgc,
+        "pgen_power":            pgp,
+        "pgen_load":             round(hydro_load, 1),
+        "pgen_rpm":              pgrpm,
+        "pgen_frequency":        pgfreq,
+        "pgen_temp":             pgtemp,
+        "pgen_fuel":             max(0, round(72 - tick * 0.01, 1)),
+        "pgen_bat_voltage":      24,
+        "pgen_bat_current":      pgbat_cur,
+        "pgen_oil_pressure":     pgoil,
+        "pgen_vibration":        pgvib,
+        "pgen_fault_voltage":      1 if (tick % 60 > 45 and pgen_running) else 0,
+        "pgen_fault_current":      1 if (tick % 75 > 65 and pgen_running) else 0,
+        "pgen_fault_rpm_low":      1 if (tick % 80 > 70 and pgen_running) else 0,
+        "pgen_fault_rpm_high":     1 if (tick % 85 > 75 and pgen_running) else 0,
+        "pgen_fault_fuel":         1 if (tick % 90 > 75 and pgen_running) else 0,
+        "pgen_fault_temp":         1 if (tick % 100 > 85 and pgen_running) else 0,
+        "pgen_fault_oil_pressure": 1 if (tick % 70 > 60 and pgen_running) else 0,
+        "pgen_fault_vibration":    1 if (tick % 50 > 40 and pgen_running) else 0,
+        "pgen_fault_reset":        0,
+        "pgen_mode_auto":          0,
+        "pgen_mode_manual":        1,
+        "pgen_mode_off":           0,
 
-        # ── Generator fault flags (periodic faults when running) ──
-        "gen_fault_voltage":      1 if (tick % 60 > 45 and gen_running) else 0,
-        "gen_fault_current":      1 if (tick % 75 > 65 and gen_running) else 0,
-        "gen_fault_rpm_low":      1 if (tick % 80 > 70 and gen_running) else 0,
-        "gen_fault_rpm_high":     1 if (tick % 85 > 75 and gen_running) else 0,
-        "gen_fault_fuel":         1 if (tick % 90 > 75 and gen_running) else 0,
-        "gen_fault_gen_temp":     1 if (tick % 100 > 85 and gen_running) else 0,
-        "gen_fault_oil_pressure": 1 if (tick % 70 > 60 and gen_running) else 0,
-        "gen_fault_vibration":    1 if (tick % 50 > 40 and gen_running) else 0,
-
-        # ── Generator mode (0=manual, 1=auto) ──
-        "gen_mode":               0,  # manual by default for testing
+        # ── Main generator (prefixed) ──
+        "gen_running":           gen_running,
+        "gen_voltage":           gv,
+        "gen_current":           gc,
+        "gen_power":             gp,
+        "gen_load":              round(hydro_load, 1),
+        "gen_rpm":               grpm,
+        "gen_frequency":         gfreq,
+        "gen_temp":              gtemp,
+        "gen_fuel":              max(0, round(70 - tick * 0.008, 1)),
+        "gen_bat_voltage":       24,
+        "gen_bat_current":       gbat_cur,
+        "gen_oil_pressure":      goil,
+        "gen_vibration":         gvib,
+        "gen_fault_voltage":      1 if (tick % 65 > 50 and gen_running) else 0,
+        "gen_fault_current":      1 if (tick % 78 > 68 and gen_running) else 0,
+        "gen_fault_rpm_low":      1 if (tick % 82 > 72 and gen_running) else 0,
+        "gen_fault_rpm_high":     1 if (tick % 88 > 78 and gen_running) else 0,
+        "gen_fault_fuel":         1 if (tick % 92 > 78 and gen_running) else 0,
+        "gen_fault_temp":         1 if (tick % 105 > 90 and gen_running) else 0,
+        "gen_fault_oil_pressure": 1 if (tick % 72 > 62 and gen_running) else 0,
+        "gen_fault_vibration":    1 if (tick % 55 > 45 and gen_running) else 0,
+        "gen_fault_reset":        0,
+        "gen_mode_auto":          0,
+        "gen_mode_manual":        1,
+        "gen_mode_off":           0,
     }
 
     try:
@@ -110,27 +153,34 @@ while True:
     except Exception as e:
         print(f"[ERR] {e}")
 
-    # Check for web toggle
+    # Check for web commands (START / SHUTDOWN)
+    try:
+        r = requests.get(f"{SERVER}/api/pgen_command", timeout=3)
+        cmd = r.json().get("cmd", "")
+        if cmd == "START":
+            pgen_running = 1
+            print(f"[WEB] Pump gen START → RUNNING")
+        elif cmd == "SHUTDOWN":
+            pgen_running = 0
+            print(f"[WEB] Pump gen SHUTDOWN → STANDBY")
+    except:
+        pass
+
     try:
         r = requests.get(f"{SERVER}/api/gen_command", timeout=3)
-        if r.json().get("cmd") == "TOGGLE":
-            gen_running = 1 - gen_running
-            print(f"[WEB] Generator toggled → {'RUNNING' if gen_running else 'STANDBY'}")
+        cmd = r.json().get("cmd", "")
+        if cmd == "START":
+            gen_running = 1
+            print(f"[WEB] Main gen START → RUNNING")
+        elif cmd == "SHUTDOWN":
+            gen_running = 0
+            print(f"[WEB] Main gen SHUTDOWN → STANDBY")
     except:
         pass
 
     if tick % 10 == 0:
-        faults = []
-        if payload.get("gen_fault_voltage"):      faults.append("V")
-        if payload.get("gen_fault_current"):      faults.append("I")
-        if payload.get("gen_fault_rpm_low"):      faults.append("RPM_LO")
-        if payload.get("gen_fault_rpm_high"):     faults.append("RPM_HI")
-        if payload.get("gen_fault_fuel"):         faults.append("FUEL")
-        if payload.get("gen_fault_gen_temp"):     faults.append("TEMP")
-        if payload.get("gen_fault_oil_pressure"): faults.append("OIL")
-        if payload.get("gen_fault_vibration"):    faults.append("VIB")
-        fault_str = f"  faults=[{','.join(faults)}]" if faults else ""
-        print(f"  tick={tick}  solar_pwr={solar_power:.1f}  hydro_pwr={hydro_power:.1f}  gen={'ON' if gen_running else 'OFF'}{fault_str}")
+        print(f"  tick={tick}  solar_pwr={solar_power:.1f}  hydro_pwr={hydro_power:.1f}  "
+              f"pgen={'ON' if pgen_running else 'OFF'}  gen={'ON' if gen_running else 'OFF'}")
 
     tick += 1
     time.sleep(POLL)
