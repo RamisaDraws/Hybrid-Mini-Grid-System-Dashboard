@@ -14,8 +14,8 @@ function toggleTheme() {
   applyTheme(getTheme() === 'dark' ? 'light' : 'dark');
   const hc = getHydroColor();
   drawGauge(document.getElementById('gauge-pressure'), parseFloat(document.getElementById('pressure-val').textContent) || 0, 0, 500, hc);
-  drawGauge(document.getElementById('gauge-voltage'), parseFloat(document.getElementById('voltage-val').textContent) || 0, 0, 440, hc);
-  drawGauge(document.getElementById('gauge-current'), parseFloat(document.getElementById('current-val').textContent) || 0, 0, 300, hc);
+  drawGauge(document.getElementById('gauge-voltage'), parseFloat(document.getElementById('voltage-val').textContent) || 0, 0, 600, hc);
+  drawGauge(document.getElementById('gauge-current'), parseFloat(document.getElementById('current-val').textContent) || 0, 0, 600, hc);
   if (flowChart) { flowChart.destroy(); flowChart = null; }
   if (dualChart) { dualChart.destroy(); dualChart = null; }
   initHydroCharts();

@@ -16,9 +16,9 @@ function toggleTheme() {
   const v = parseFloat(document.getElementById('voltage-val').textContent) || 0;
   const ir = parseFloat(document.getElementById('irradiance-val').textContent) || 0;
   const r = parseFloat(document.getElementById('rms-val').textContent) || 0;
-  drawGauge(document.getElementById('gauge-voltage'), v, 260, sc);
+  drawGauge(document.getElementById('gauge-voltage'), v, 300, sc);
   drawGauge(document.getElementById('gauge-irradiance'), ir, 2000, sc);
-  drawGauge(document.getElementById('gauge-rms'), r, 500, sc);
+  drawGauge(document.getElementById('gauge-rms'), r, 300, sc);
   if (solarChart) { solarChart.destroy(); initSolarChart(); }
 }
 function isLight() { return document.body.classList.contains('light'); }

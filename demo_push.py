@@ -46,13 +46,11 @@ while True:
         pgtemp = round(110 + 5 * wave, 1)
         pgoil = round(45 + 5 * wave2, 1)
         pgvib = round(10 + 3 * wave, 1)
-        pgbat_cur = 15
     else:
         pgv, pgc, pgp = 0, 0, 0
         pgrpm, pgfreq = 0, 0
         pgtemp = 0
         pgoil, pgvib = 0, 0
-        pgbat_cur = 0
 
     # ── Main generator signals ──
     if gen_running:
@@ -64,13 +62,11 @@ while True:
         gtemp = round(120 + 5 * wave, 1)
         goil = round(45 + 5 * wave2, 1)
         gvib = round(12 + 3 * wave, 1)
-        gbat_cur = 18
     else:
         gv, gc, gp = 0, 0, 0
         grpm, gfreq = 0, 0
         gtemp = 0
         goil, gvib = 0, 0
-        gbat_cur = 0
 
     payload = {
         # ── Solar (prefixed) ──
@@ -104,7 +100,6 @@ while True:
         "pgen_temp":             pgtemp,
         "pgen_fuel":             max(0, round(72 - tick * 0.01, 1)),
         "pgen_bat_voltage":      24,
-        "pgen_bat_current":      pgbat_cur,
         "pgen_oil_pressure":     pgoil,
         "pgen_vibration":        pgvib,
         "pgen_fault_voltage":      1 if (tick % 60 > 45 and pgen_running) else 0,
@@ -115,6 +110,8 @@ while True:
         "pgen_fault_temp":         1 if (tick % 100 > 85 and pgen_running) else 0,
         "pgen_fault_oil_pressure": 1 if (tick % 70 > 60 and pgen_running) else 0,
         "pgen_fault_vibration":    1 if (tick % 50 > 40 and pgen_running) else 0,
+        "pgen_fault_freq_high":    1 if (tick % 95 > 80 and pgen_running) else 0,
+        "pgen_fault_freq_low":     1 if (tick % 110 > 95 and pgen_running) else 0,
         "pgen_fault_reset":        0,
         "pgen_mode_auto":          0,
         "pgen_mode_manual":        1,
@@ -131,7 +128,6 @@ while True:
         "gen_temp":              gtemp,
         "gen_fuel":              max(0, round(70 - tick * 0.008, 1)),
         "gen_bat_voltage":       24,
-        "gen_bat_current":       gbat_cur,
         "gen_oil_pressure":      goil,
         "gen_vibration":         gvib,
         "gen_fault_voltage":      1 if (tick % 65 > 50 and gen_running) else 0,
@@ -142,6 +138,8 @@ while True:
         "gen_fault_temp":         1 if (tick % 105 > 90 and gen_running) else 0,
         "gen_fault_oil_pressure": 1 if (tick % 72 > 62 and gen_running) else 0,
         "gen_fault_vibration":    1 if (tick % 55 > 45 and gen_running) else 0,
+        "gen_fault_freq_high":    1 if (tick % 98 > 83 and gen_running) else 0,
+        "gen_fault_freq_low":     1 if (tick % 115 > 100 and gen_running) else 0,
         "gen_fault_reset":        0,
         "gen_mode_auto":          0,
         "gen_mode_manual":        1,

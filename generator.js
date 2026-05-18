@@ -168,13 +168,12 @@ function applyState(d) {
     if (btnLabel) btnLabel.textContent = 'Stop Generator';
 
     drawGauge(document.getElementById('gauge-gen-voltage'), d.voltage, 0, 500, gc);
-    drawGauge(document.getElementById('gauge-gen-current'), d.current, 0, 200, gc);
+    drawGauge(document.getElementById('gauge-gen-current'), d.current, 0, 600, gc);
     drawGauge(document.getElementById('gauge-vibration'), d.vibration, 0, 60, gc);
     drawGauge(document.getElementById('gauge-oil-pressure'), d.oil_pressure, 0, 80, gc);
     drawGauge(document.getElementById('gauge-rpm'), d.rpm, 0, 2000, gc);
     drawGauge(document.getElementById('gauge-freq'), d.frequency, 0, 60, gc);
     drawGauge(document.getElementById('gauge-bat-voltage'), d.bat_voltage, 0, 30, gc);
-    drawGauge(document.getElementById('gauge-bat-current'), d.bat_current, 0, 10, gc);
 
     document.getElementById('gen-voltage-val').textContent = Number(d.voltage).toFixed(1);
     document.getElementById('gen-current-val').textContent = Number(d.current).toFixed(1);
@@ -183,7 +182,6 @@ function applyState(d) {
     document.getElementById('rpm-val').textContent = Number(d.rpm).toFixed(0);
     document.getElementById('freq-val').textContent = Number(d.frequency).toFixed(1);
     document.getElementById('bat-voltage-val').textContent = Number(d.bat_voltage).toFixed(1);
-    document.getElementById('bat-current-val').textContent = Number(d.bat_current).toFixed(1);
 
     setVBar('vbar-gen-temp', 'gen-temp-val', (d.gen_temp / 200) * 100, Number(d.gen_temp).toFixed(1));
 
@@ -204,7 +202,6 @@ function applyState(d) {
       drawGauge(document.getElementById(id), 0, 0, 1, gc, true);
     });
     drawGauge(document.getElementById('gauge-bat-voltage'), d.bat_voltage, 0, 30, gc);
-    drawGauge(document.getElementById('gauge-bat-current'), 0, 0, 10, gc, true);
 
     document.getElementById('gen-voltage-val').textContent = '0';
     document.getElementById('gen-current-val').textContent = '0';
@@ -213,7 +210,6 @@ function applyState(d) {
     document.getElementById('rpm-val').textContent = '0';
     document.getElementById('freq-val').textContent = '0';
     document.getElementById('bat-voltage-val').textContent = Number(d.bat_voltage).toFixed(1);
-    document.getElementById('bat-current-val').textContent = '0';
 
     setVBar('vbar-gen-temp', 'gen-temp-val', 0, '—');
 
@@ -378,7 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initGenChart();
 
   applyState({ running: 0, voltage: 0, current: 0, rpm: 0, frequency: 0,
-    gen_temp: 0, fuel_pct: 72, bat_voltage: 24, bat_current: 0,
+    gen_temp: 0, fuel_pct: 72, bat_voltage: 24,
     power_out: 0, load: 35, vibration: 0, oil_pressure: 0,
     mode_auto: 0, mode_manual: 1, mode_off: 0, fault_reset: 0 });
 
