@@ -96,7 +96,7 @@ function getChartOpts() {
         titleFont: { family: 'JetBrains Mono', size: 12 },
         bodyFont: { family: 'JetBrains Mono', size: 13 },
         padding: 8, displayColors: true,
-        callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toFixed(1)} kW` }
+        callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toFixed(1)} W` }
       }
     },
     scales: {
@@ -239,11 +239,11 @@ function initSolarChart() {
       data: {
         labels: chartLabels,
         datasets: [
-          { label: 'Power Out (kW)', data: powerData, borderColor: sc, borderWidth: 2,
+          { label: 'Power Out (W)', data: powerData, borderColor: sc, borderWidth: 2,
             backgroundColor: gP, fill: true, tension: 0.45, pointRadius: 0,
             pointHoverRadius: 4, pointHoverBackgroundColor: sc,
             pointHoverBorderColor: isLight() ? '#ffffff' : '#0a0a0a', pointHoverBorderWidth: 2 },
-          { label: 'Load (kW)', data: loadData, borderColor: gc, borderWidth: 1.5,
+          { label: 'Load (kW)', hidden: true, data: loadData, borderColor: gc, borderWidth: 1.5,
             borderDash: [5, 3], backgroundColor: gL, fill: true, tension: 0.45,
             pointRadius: 0, pointHoverRadius: 4, pointHoverBackgroundColor: gc,
             pointHoverBorderColor: isLight() ? '#ffffff' : '#0a0a0a', pointHoverBorderWidth: 2 }

@@ -277,7 +277,7 @@ setInterval(async () => {
     // Solar row
     setStatVal('.solar-row .stat-item:nth-child(1) .stat-value', Number(d.solar.voltage).toFixed(1), 'V');
     setStatVal('.solar-row .stat-item:nth-child(2) .stat-value', Number(d.solar.irradiance).toFixed(0), 'W/m²');
-    setStatVal('.solar-row .stat-item:nth-child(3) .stat-value', Number(d.solar.power_out).toFixed(1), 'kW');
+    setStatVal('.solar-row .stat-item:nth-child(3) .stat-value', Number(d.solar.power_out).toFixed(1), 'W');
 
     // Hydro row
     setStatVal('.hydro-row .stat-item:nth-child(1) .stat-value', Number(d.hydro.voltage).toFixed(1), 'V');

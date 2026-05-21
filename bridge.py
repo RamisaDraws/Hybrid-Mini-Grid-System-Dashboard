@@ -12,8 +12,11 @@ import scipy.io as sio
 import math
 
 # ── Configuration ────────────────────────────────────────
-SERVER     = "http://127.0.0.1:5000"
+#uncomment the line below if running on local machine (also, comment the server with render address)
+#SERVER     = "http://127.0.0.1:5000"
+
 #change server adress if remotely deployed to render
+SERVER     = "https://karazhar-minigrid.onrender.com"
 POLL       = 0.5   # seconds between loops
 
 # File paths

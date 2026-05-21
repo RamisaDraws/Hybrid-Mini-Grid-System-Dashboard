@@ -308,6 +308,9 @@ setInterval(async () => {
     document.getElementById('voltage-val').textContent = Number(d.voltage).toFixed(1);
     document.getElementById('current-val').textContent = Number(d.current).toFixed(1);
 
+    const frEl = document.getElementById('flow-rate-val');
+    if (frEl) frEl.textContent = Number(d.flow_rate).toFixed(2);
+
     // Pump generator status on hydro page
     const genDot = document.getElementById('hydro-gen-dot');
     const genTxt = document.getElementById('hydro-gen-text');
