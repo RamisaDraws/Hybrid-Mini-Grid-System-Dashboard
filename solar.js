@@ -285,7 +285,7 @@ setInterval(async () => {
     // SOC
     const socEl = document.getElementById('soc-val');
     const socBar = document.getElementById('soc-bar');
-    if (socEl) socEl.textContent = Number(d.soc).toFixed(2) + '%';
+    if (socEl) socEl.textContent = Number(d.soc).toFixed(3) + '%';
     if (socBar) socBar.style.width = d.soc + '%';
 
     // Charging

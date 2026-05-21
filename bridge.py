@@ -13,10 +13,10 @@ import math
 
 # ── Configuration ────────────────────────────────────────
 #uncomment the line below if running on local machine (also, comment the server with render address)
-#SERVER     = "http://127.0.0.1:5000"
+SERVER     = "http://127.0.0.1:5000"
 
 #change server adress if remotely deployed to render
-SERVER     = "https://karazhar-minigrid.onrender.com"
+#SERVER     = "https://karazhar-minigrid.onrender.com"
 POLL       = 0.5   # seconds between loops
 
 # File paths
@@ -41,7 +41,6 @@ SOLAR_VARS = {
     "solar_power":       "solar_power",
     "solar_load":        "solar_load",
     "solar_soc":         "solar_soc",
-    "solar_charging":    "solar_charging",
     "solar_temp_panel":  "solar_temp_panel",
     "solar_rms":         "solar_rms",
 }

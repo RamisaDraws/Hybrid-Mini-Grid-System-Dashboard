@@ -71,7 +71,7 @@ _gen_pending = {"cmd": ""}
 _SOLAR_PREFIX = {
     "solar_voltage": "voltage", "solar_irradiance": "irradiance",
     "solar_power": "power_out", "solar_load": "load",
-    "solar_soc": "soc", "solar_charging": "charging",
+    "solar_soc": "soc",
     "solar_rms": "rms", "solar_temp_panel": "temp_panel",
 }
 
@@ -310,14 +310,8 @@ def _generate_alerts():
                        "rms_high", "rms_low")
     _check_range_dedup("solar", "Irradiance", _solar["irradiance"],
                        "irradiance_high", "irradiance_low")
-    prev_soc = _prev_states.get("prev_soc")
-    cur_soc = _solar["soc"]
-    if prev_soc is not None:
-        charging_now = 1 if cur_soc > prev_soc else 0
-        _solar["charging"] = charging_now
-        _check_state_change("charging", charging_now,
-                            "Battery charging", "Battery not charging", "solar")
-    _prev_states["prev_soc"] = cur_soc
+    _check_state_change("charging", _solar["charging"],
+                        "Battery charging", "Battery not charging", "solar")
 
     soc_lo = _thresholds["solar"].get("soc_low")
     if soc_lo is not None:
@@ -450,9 +444,22 @@ def api_update():
     global _chart_update_counter
     data = request.json or {}
     with _lock:
+                
         for prefixed_key, field in _SOLAR_PREFIX.items():
             if prefixed_key in data:
                 _solar[field] = data[prefixed_key]
+
+        # ── Charging detection: compare SOC over ~5 second window ──
+        cur_soc = _solar["soc"]
+        soc_history = _prev_states.get("soc_history", [])
+        soc_history.append(cur_soc)
+        if len(soc_history) > 10:
+            old_soc = soc_history.pop(0)
+            if cur_soc > old_soc + 0.001:
+                _solar["charging"] = 1
+            elif cur_soc < old_soc - 0.001:
+                _solar["charging"] = 0
+        _prev_states["soc_history"] = soc_history
 
         for prefixed_key, field in _HYDRO_PREFIX.items():
             if prefixed_key in data:
