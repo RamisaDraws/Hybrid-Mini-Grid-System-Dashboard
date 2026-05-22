@@ -232,30 +232,37 @@ def _get_available_dates():
 # ── Alert helpers ────────────────────────────────────────
 def _check_range_dedup(source, label, value, key_high, key_low):
     t = _thresholds[source]
-    hi = t.get(key_high)
-    lo = t.get(key_low)
+    hi = t.get(key_high) if key_high else None
+    lo = t.get(key_low) if key_low else None
 
-    if hi is not None:
-        cond_key = f"{source}:{label}_high"
-        currently_high = value > hi
-        was_high = _active_conditions.get(cond_key, False)
-        if currently_high and not was_high:
-            _add_alert(source, f"{label} HIGH — {value:.1f} (Threshold: {hi})", "warn")
-            _active_conditions[cond_key] = True
-        elif not currently_high and was_high:
+    cond_key_high = f"{source}:{label}_high"
+    cond_key_low  = f"{source}:{label}_low"
+
+    currently_high = (hi is not None) and (value >= hi)
+    currently_low  = (lo is not None) and (value <= lo)
+    in_normal_band = not currently_high and not currently_low
+
+    was_high = _active_conditions.get(cond_key_high, False)
+    was_low  = _active_conditions.get(cond_key_low, False)
+
+    # ── HIGH alert ──
+    if currently_high and not was_high:
+        _add_alert(source, f"{label} HIGH — {value:.1f} (Threshold: {hi})", "warn")
+        _active_conditions[cond_key_high] = True
+
+    # ── LOW alert ──
+    if currently_low and not was_low:
+        _add_alert(source, f"{label} LOW — {value:.1f} (threshold: {lo})", "warn")
+        _active_conditions[cond_key_low] = True
+
+    # ── Recovery: only when value is between both thresholds ──
+    if in_normal_band:
+        if was_high:
+            _active_conditions[cond_key_high] = False
             _add_alert(source, f"{label} returned to normal — {value:.1f} (Threshold: {hi})", "info")
-            _active_conditions[cond_key] = False
-
-    if lo is not None:
-        cond_key = f"{source}:{label}_low"
-        currently_low = value < lo
-        was_low = _active_conditions.get(cond_key, False)
-        if currently_low and not was_low:
-            _add_alert(source, f"{label} LOW — {value:.1f} (threshold: {lo})", "warn")
-            _active_conditions[cond_key] = True
-        elif not currently_low and was_low:
+        if was_low:
+            _active_conditions[cond_key_low] = False
             _add_alert(source, f"{label} returned to normal — {value:.1f} (threshold: {lo})", "info")
-            _active_conditions[cond_key] = False
 
 def _check_state_change(key, new_val, on_msg, off_msg, source):
     prev = _prev_states.get(key)

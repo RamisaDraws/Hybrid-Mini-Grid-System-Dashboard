@@ -16,9 +16,9 @@ function toggleTheme() {
   const v = parseFloat(document.getElementById('voltage-val').textContent) || 0;
   const ir = parseFloat(document.getElementById('irradiance-val').textContent) || 0;
   const r = parseFloat(document.getElementById('rms-val').textContent) || 0;
-  drawGauge(document.getElementById('gauge-voltage'), v, 300, sc);
+  drawGauge(document.getElementById('gauge-voltage'), v, 400, sc);
   drawGauge(document.getElementById('gauge-irradiance'), ir, 2000, sc);
-  drawGauge(document.getElementById('gauge-rms'), r, 300, sc);
+  drawGauge(document.getElementById('gauge-rms'), r, 400, sc);
   if (solarChart) { solarChart.destroy(); initSolarChart(); }
 }
 function isLight() { return document.body.classList.contains('light'); }
@@ -257,9 +257,9 @@ function initSolarChart() {
 document.addEventListener('DOMContentLoaded', () => {
   initSolarChart();
   const sc = getSolarColor();
-  drawGauge(document.getElementById('gauge-voltage'), 0, 260, sc);
+  drawGauge(document.getElementById('gauge-voltage'), 0, 400, sc);
   drawGauge(document.getElementById('gauge-irradiance'), 0, 2000, sc);
-  drawGauge(document.getElementById('gauge-rms'), 0, 500, sc);
+  drawGauge(document.getElementById('gauge-rms'), 0, 400, sc);
   loadChartHistory();
   loadThresholds();
   loadAlertDates();
@@ -274,9 +274,9 @@ setInterval(async () => {
     const d = await res.json();
 
     const sc = getSolarColor();
-    drawGauge(document.getElementById('gauge-voltage'), d.voltage, 260, sc);
+    drawGauge(document.getElementById('gauge-voltage'), d.voltage, 400, sc);
     drawGauge(document.getElementById('gauge-irradiance'), d.irradiance || 0, 2000, sc);
-    drawGauge(document.getElementById('gauge-rms'), d.rms || 0, 500, sc);
+    drawGauge(document.getElementById('gauge-rms'), d.rms || 0, 400, sc);
 
     document.getElementById('voltage-val').textContent = Number(d.voltage).toFixed(1);
     document.getElementById('irradiance-val').textContent = Number(d.irradiance || 0).toFixed(0);
